@@ -11,7 +11,7 @@ public partial class Employee
 
     public string? Name { get; set; }
 
-    public string? Adress { get; set; }
+    public string? Address { get; set; }
 
     public string? Tel { get; set; }
 

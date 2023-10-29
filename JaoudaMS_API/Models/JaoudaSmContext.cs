@@ -70,7 +70,7 @@ public partial class JaoudaSmContext : DbContext
             entity.Property(e => e.Cin)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.Adress).IsUnicode(false);
+            entity.Property(e => e.Address).IsUnicode(false);
             entity.Property(e => e.Commission).HasColumnType("decimal(18, 0)");
             entity.Property(e => e.Name)
                 .HasMaxLength(75)
