@@ -112,7 +112,7 @@ namespace JaoudaMS_API.Controllers
                 }
             }
 
-            return CreatedAtAction("GetEmployee", new { id = employee.Cin }, employee);
+            return CreatedAtAction("PostEmployee", new { id = employee.Cin }, employee);
         }
 
         // DELETE: api/Employees/5
