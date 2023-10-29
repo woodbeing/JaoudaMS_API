@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using JaoudaMS_API.Models;
 using AutoMapper;
 using JaoudaMS_API.DTOs;
+using Microsoft.AspNetCore.Http.HttpResults;
 
 namespace JaoudaMS_API.Controllers
 {
@@ -36,14 +37,14 @@ namespace JaoudaMS_API.Controllers
         }
 
         // GET: api/Employees/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<EmployeeDto>> GetEmployee(string id)
+        [HttpGet("{cin}")]
+        public async Task<ActionResult<EmployeeDto>> GetEmployee(string cin)
         {
             if (_context.Employees == null)
             {
                 return NotFound();
             }
-            var employeepure = await _context.Employees.FindAsync(id);
+            var employeepure = await _context.Employees.FindAsync(cin);
             var employee = _mapper.Map<EmployeeDto>(employeepure);
 
             if (employee == null)
@@ -51,15 +52,15 @@ namespace JaoudaMS_API.Controllers
                 return NotFound();
             }
 
-            return employee;
+            return Ok(employee);
         }
 
         // PUT: api/Employees/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutEmployee(string id, Employee employee)
+        [HttpPut("{cin}")]
+        public async Task<IActionResult> PutEmployee(string cin, Employee employee)
         {
-            if (id != employee.Cin)
+            if (cin != employee.Cin)
             {
                 return BadRequest();
             }
@@ -72,7 +73,7 @@ namespace JaoudaMS_API.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EmployeeExists(id))
+                if (!EmployeeExists(cin))
                 {
                     return NotFound();
                 }
@@ -88,13 +89,13 @@ namespace JaoudaMS_API.Controllers
         // POST: api/Employees
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Employee>> PostEmployee(Employee employee)
+        public async Task<ActionResult<EmployeeDto>> PostEmployee(EmployeeDto employee)
         {
-          if (_context.Employees == null)
-          {
-              return Problem("Entity set 'JaoudaSmContext.Employees'  is null.");
-          }
-            _context.Employees.Add(employee);
+            if (_context.Employees == null)
+            {
+                return Problem("Entity set 'JaoudaSmContext.Employees'  is null.");
+            }
+            _context.Employees.Add(_mapper.Map<Employee>(employee));
             try
             {
                 await _context.SaveChangesAsync();

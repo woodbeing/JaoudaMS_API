@@ -17,7 +17,7 @@ public partial class Employee
 
     public decimal? Salary { get; set; }
 
-    public decimal? Comission { get; set; }
+    public decimal? Commission { get; set; }
 
     public virtual ICollection<Trip> TripDriverNavigations { get; set; } = new List<Trip>();
 

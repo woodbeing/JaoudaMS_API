@@ -71,7 +71,7 @@ public partial class JaoudaSmContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.Adress).IsUnicode(false);
-            entity.Property(e => e.Comission).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Commission).HasColumnType("decimal(18, 0)");
             entity.Property(e => e.Name)
                 .HasMaxLength(75)
                 .IsUnicode(false);
