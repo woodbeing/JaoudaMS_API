@@ -44,13 +44,15 @@ namespace JaoudaMS_API.Controllers
             {
                 return NotFound();
             }
-            var employeepure = await _context.Employees.FindAsync(cin);
-            var employee = _mapper.Map<EmployeeDto>(employeepure);
 
-            if (employee == null)
+            var employeepure = await _context.Employees.FindAsync(cin);
+
+            if (employeepure == null)
             {
                 return NotFound();
             }
+
+            var employee = _mapper.Map<EmployeeDto>(employeepure);
 
             return Ok(employee);
         }
@@ -58,14 +60,11 @@ namespace JaoudaMS_API.Controllers
         // PUT: api/Employees/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{cin}")]
-        public async Task<IActionResult> PutEmployee(string cin, Employee employee)
+        public async Task<IActionResult> PutEmployee(string cin, EmployeeDto employee)
         {
-            if (cin != employee.Cin)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(employee).State = EntityState.Modified;
+            if (!EmployeeExists(cin)) return NotFound();
+                
+            _context.Entry(_mapper.Map<Employee>(employee)).State = EntityState.Modified;
 
             try
             {
@@ -73,17 +72,10 @@ namespace JaoudaMS_API.Controllers
             }
             catch (DbUpdateConcurrencyException)
             {
-                if (!EmployeeExists(cin))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
-            return NoContent();
+            return Ok();
         }
 
         // POST: api/Employees
@@ -93,9 +85,11 @@ namespace JaoudaMS_API.Controllers
         {
             if (_context.Employees == null)
             {
-                return Problem("Entity set 'JaoudaSmContext.Employees'  is null.");
+                return Problem("la base du donnes ou le table empolyee n'exite pas");
             }
+
             _context.Employees.Add(_mapper.Map<Employee>(employee));
+
             try
             {
                 await _context.SaveChangesAsync();
@@ -104,7 +98,9 @@ namespace JaoudaMS_API.Controllers
             {
                 if (EmployeeExists(employee.Cin))
                 {
-                    return Conflict();
+                    return Conflict(new {
+                        statusCode = Conflict().StatusCode, Message = $"l'employee avec CIN : ({employee.Cin}) est deja ajouter"
+                    });
                 }
                 else
                 {
@@ -116,20 +112,22 @@ namespace JaoudaMS_API.Controllers
         }
 
         // DELETE: api/Employees/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteEmployee(string id)
+        [HttpDelete("{Cin}")]
+        public async Task<IActionResult> DeleteEmployee(string Cin)
         {
             if (_context.Employees == null)
             {
                 return NotFound();
             }
-            var employee = await _context.Employees.FindAsync(id);
+            var employee = await _context.Employees.FindAsync(Cin);
+
             if (employee == null)
             {
                 return NotFound();
             }
 
-            _context.Employees.Remove(employee);
+            employee.Salary = 0;
+
             await _context.SaveChangesAsync();
 
             return NoContent();

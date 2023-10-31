@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JaoudaMS_API.Models;
+using AutoMapper;
+using JaoudaMS_API.DTOs;
 
 namespace JaoudaMS_API.Controllers
 {
@@ -14,21 +16,23 @@ namespace JaoudaMS_API.Controllers
     public class BoxesController : ControllerBase
     {
         private readonly JaoudaSmContext _context;
+        private readonly IMapper _mapper;
 
-        public BoxesController(JaoudaSmContext context)
+        public BoxesController(JaoudaSmContext context, IMapper mapper)
         {
+            _mapper = mapper;
             _context = context;
         }
 
         // GET: api/Boxes
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Box>>> GetBoxes()
+        public async Task<ActionResult<IEnumerable<BoxDto>>> GetBoxes()
         {
-          if (_context.Boxes == null)
-          {
-              return NotFound();
-          }
-            return await _context.Boxes.ToListAsync();
+            if (_context.Boxes == null)
+            {
+                return NotFound();
+            }
+            return await _context.Boxes.Select(box => _mapper.Map<BoxDto>(box)).ToListAsync();
         }
 
         // GET: api/Boxes/5

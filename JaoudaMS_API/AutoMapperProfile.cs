@@ -10,6 +10,8 @@ namespace JaoudaMS_API
         {
             CreateMap<EmployeeDto, Employee>();
             CreateMap<Employee, EmployeeDto>();
+            CreateMap<BoxDto, Box>();
+            CreateMap<Box, BoxDto>();
         }
     }
 }
