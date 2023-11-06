@@ -110,19 +110,20 @@ public partial class JaoudaSmContext : DbContext
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity
-                .HasNoKey()
-                .ToTable("Payment");
+            entity.HasKey(e => new { e.Employee, e.Month }).HasName("PK_PEmp");
 
-            entity.Property(e => e.Commission).HasColumnType("decimal(18, 0)");
-            entity.Property(e => e.Date).HasColumnType("date");
+            entity.ToTable("Payment");
+
             entity.Property(e => e.Employee)
                 .HasMaxLength(20)
                 .IsUnicode(false);
+            entity.Property(e => e.Commission).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Date).HasColumnType("date");
             entity.Property(e => e.Salary).HasColumnType("decimal(18, 0)");
 
-            entity.HasOne(d => d.EmployeeNavigation).WithMany()
+            entity.HasOne(d => d.EmployeeNavigation).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.Employee)
+                .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_PEmp");
         });
 
@@ -200,7 +201,7 @@ public partial class JaoudaSmContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("ID");
-            entity.Property(e => e.Adress).IsUnicode(false);
+            entity.Property(e => e.Address).IsUnicode(false);
             entity.Property(e => e.Email)
                 .HasMaxLength(100)
                 .IsUnicode(false);

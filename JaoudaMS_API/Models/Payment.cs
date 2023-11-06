@@ -5,7 +5,9 @@ namespace JaoudaMS_API.Models;
 
 public partial class Payment
 {
-    public string? Employee { get; set; }
+    public string Employee { get; set; } = null!;
+
+    public byte Month { get; set; }
 
     public DateTime? Date { get; set; }
 
@@ -13,5 +15,5 @@ public partial class Payment
 
     public decimal? Commission { get; set; }
 
-    public virtual Employee? EmployeeNavigation { get; set; }
+    public virtual Employee EmployeeNavigation { get; set; } = null!;
 }

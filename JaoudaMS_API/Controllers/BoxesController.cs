@@ -25,109 +25,100 @@ namespace JaoudaMS_API.Controllers
         }
 
         // GET: api/Boxes
-        [HttpGet]
+        [HttpGet("all")]
         public async Task<ActionResult<IEnumerable<BoxDto>>> GetBoxes()
         {
             if (_context.Boxes == null)
-            {
-                return NotFound();
-            }
+                return Problem("la base du donnes ou le table caisse n'exite pas.");
+
             return await _context.Boxes.Select(box => _mapper.Map<BoxDto>(box)).ToListAsync();
         }
 
         // GET: api/Boxes/5
-        [HttpGet("{id}")]
-        public async Task<ActionResult<Box>> GetBox(string id)
+        [HttpGet("{type}")]
+        public async Task<ActionResult<BoxDto>> GetBox(string type)
         {
-          if (_context.Boxes == null)
-          {
-              return NotFound();
-          }
-            var box = await _context.Boxes.FindAsync(id);
+            if (_context.Boxes == null) 
+                return Problem("la base du donnes ou le table caisse n'exite pas.");
+
+            var box = _mapper.Map<BoxDto>(await _context.Boxes.FindAsync(type));
 
             if (box == null)
-            {
                 return NotFound();
-            }
 
             return box;
         }
 
         // PUT: api/Boxes/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutBox(string id, Box box)
-        {
-            if (id != box.Type)
-            {
-                return BadRequest();
-            }
+        //[HttpPut("{type}")]
+        //public async Task<IActionResult> PutBox(string type, BoxDto box)
+        //{
+        //    if (type != box.Type)
+        //        return BadRequest();
 
-            _context.Entry(box).State = EntityState.Modified;
+        //    if (!BoxExists(type))
+        //        return NotFound();
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!BoxExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
+        //    _context.Entry(_mapper.Map<Box>(box)).State = EntityState.Modified;
 
-            return NoContent();
-        }
+        //    try
+        //    {
+        //        await _context.SaveChangesAsync();
+        //    }
+        //    catch (DbUpdateConcurrencyException)
+        //    {
+        //        throw;
+        //    }
+
+        //    return NoContent();
+        //}
 
         // POST: api/Boxes
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Box>> PostBox(Box box)
+        public async Task<ActionResult<BoxDto>> PostBox(BoxDto box)
         {
-          if (_context.Boxes == null)
-          {
-              return Problem("Entity set 'JaoudaSmContext.Boxes'  is null.");
-          }
-            _context.Boxes.Add(box);
+            if (_context.Boxes == null)
+                return Problem("la base du donnes ou le table caisse n'exite pas.");
+
+            if (BoxExists(box.Type))
+                return Conflict(new { statusCode = Conflict().StatusCode, massage = "cette Caisse deja existe"});
+
+            _context.Boxes.Add(_mapper.Map<Box>(box));
+
             try
             {
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateException)
             {
-                if (BoxExists(box.Type))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
+                throw;
             }
 
-            return CreatedAtAction("GetBox", new { id = box.Type }, box);
+            return CreatedAtAction("PostBox", new { id = box.Type }, box);
         }
 
         // DELETE: api/Boxes/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBox(string id)
+        [HttpDelete("{type}")]
+        public async Task<IActionResult> DeleteBox(string type)
         {
             if (_context.Boxes == null)
-            {
-                return NotFound();
-            }
-            var box = await _context.Boxes.FindAsync(id);
+                return Problem("la base du donnes ou le table caisse n'exite pas.");
+
+            var box = await _context.Boxes.FindAsync(type);
+
             if (box == null)
-            {
                 return NotFound();
-            }
+
+            if (_mapper.Map<BoxDto>(await _context.Boxes.FirstOrDefaultAsync(box => box.SubBox == type)) != null) 
+                return Conflict(
+                    new
+                    {
+                        statusCode = Conflict().StatusCode,
+                        message = $"Assurez-vous de supprimer une boîte créée par accident.\n(Il est impossible de supprimer une caisse déjà utilisée dans d'autres opérations.)"
+                    });
 
             _context.Boxes.Remove(box);
+
             await _context.SaveChangesAsync();
 
             return NoContent();

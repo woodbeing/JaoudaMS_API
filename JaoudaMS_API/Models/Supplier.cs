@@ -7,7 +7,7 @@ public partial class Supplier
 {
     public string Id { get; set; } = null!;
 
-    public string? Adress { get; set; }
+    public string? Address { get; set; }
 
     public string? Tel { get; set; }
 
