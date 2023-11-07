@@ -6,6 +6,8 @@
 
         public byte Month { get; set; }
 
+        public short Year { get; set; }
+
         public DateTime? Date { get; set; }
 
         public decimal? Salary { get; set; }

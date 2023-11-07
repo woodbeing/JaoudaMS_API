@@ -110,7 +110,7 @@ public partial class JaoudaSmContext : DbContext
 
         modelBuilder.Entity<Payment>(entity =>
         {
-            entity.HasKey(e => new { e.Employee, e.Month }).HasName("PK_PEmp");
+            entity.HasKey(e => new { e.Employee, e.Month, e.Year }).HasName("PK_PEmp");
 
             entity.ToTable("Payment");
 

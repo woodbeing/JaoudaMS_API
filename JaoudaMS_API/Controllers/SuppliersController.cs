@@ -25,22 +25,24 @@ namespace JaoudaMS_API.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/Suppliers
+        #region GET Methodes
+
+        #region api/Suppliers
         [HttpGet]
         public async Task<ActionResult<IEnumerable<SupplierDto>>> GetSuppliers()
         {
             if (_context.Suppliers == null)
-                return Problem("la base du donnes ou le table caisse n'exite pas.");
+                return Problem("la base du donnes ou le table Fournisseur n'exite pas.");
 
-            return await _context.Suppliers.Select(sup => _mapper.Map<SupplierDto>(sup)).ToListAsync();
+            return Ok(await _context.Suppliers.Select(sup => _mapper.Map<SupplierDto>(sup)).ToListAsync());
         }
-
-        // GET: api/Suppliers/5
+        #endregion
+        #region api/Suppliers/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<SupplierDto>> GetSupplier(string id)
         {
             if (_context.Suppliers == null)
-                return Problem("la base du donnes ou le table caisse n'exite pas.");
+                return Problem("la base du donnes ou le table Fournisseur n'exite pas.");
 
             var supplier = _mapper.Map<SupplierDto>(await _context.Suppliers.FindAsync(id));
 
@@ -49,61 +51,67 @@ namespace JaoudaMS_API.Controllers
 
             return Ok(supplier);
         }
+        #endregion
 
-        // PUT: api/Suppliers/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSupplier(string id, SupplierDto supplier)
-        {
-            if (id != supplier.Id)
-                return NotFound();
+        #endregion
 
-            if (!SupplierExists(id))
-                return NotFound();
+        #region POST Methodes
 
-            _context.Entry(supplier).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw;
-            }
-
-            return NoContent();
-        }
-
-        // POST: api/Suppliers
+        #region api/Suppliers
         [HttpPost]
         public async Task<ActionResult<SupplierDto>> PostSupplier(SupplierDto supplier)
         {
             if (_context.Suppliers == null)
-                return Problem("la base du donnes ou le table caisse n'exite pas.");
+                return Problem("la base du donnes ou le table Fournisseur n'exite pas.");
 
             if (SupplierExists(supplier.Id))
-                return Conflict(new { statusCode = Conflict().StatusCode, massage = "ce Fournisseur deja existe" });
+                return Problem("ce Fournisseur deja existe");
 
             _context.Suppliers.Add(_mapper.Map<Supplier>(supplier));
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                throw;
-            }
+            try { await _context.SaveChangesAsync(); }
+            catch (DbUpdateException) { throw; }
 
-            return CreatedAtAction("PostSupplier", new { id = supplier.Id }, supplier);
+            return Ok(supplier);
         }
+        #endregion
 
-        // DELETE: api/Suppliers/5
-        [HttpDelete("{id}")]
-        public async Task<ActionResult<IEnumerable<PurchaseDto>>> DeleteSupplier(string id)
+        #endregion
+
+        #region PUT Methodes
+
+        #region api/Suppliers/{id}
+        [HttpPut("{id}")]
+        public async Task<IActionResult> PutSupplier(string id, SupplierDto supplier)
         {
             if (_context.Suppliers == null)
-                return Problem("la base du donnes ou le table caisse n'exite pas.");
+                return Problem("la base du donnes ou le table Fournisseur n'exite pas.");
+
+            if (!SupplierExists(id))
+                return NotFound();
+
+            if (id != supplier.Id)
+                return Problem("Impossible de changer l'ID d'un Fournisseur");
+
+            _context.Entry(_mapper.Map<Supplier>(supplier)).State = EntityState.Modified;
+
+            try { await _context.SaveChangesAsync(); }
+            catch (DbUpdateConcurrencyException) { throw; }
+
+            return Ok(supplier);
+        }
+        #endregion
+
+        #endregion
+
+        #region DELETE Methodes
+
+        #region api/Suppliers/{id}
+        [HttpDelete("{id}")]
+        public async Task<ActionResult> DeleteSupplier(string id)
+        {
+            if (_context.Suppliers == null)
+                return Problem("la base du donnes ou le table Fournisseur n'exite pas.");
 
             var supplier = await _context.Suppliers.FindAsync(id);
 
@@ -115,13 +123,13 @@ namespace JaoudaMS_API.Controllers
                 _context.Suppliers.Remove(supplier);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException) 
-            {
-                return Ok(_mapper.Map<IEnumerable<PurchaseDto>>(await _context.Purchases.Where(purchase => purchase.Supplier == id).ToListAsync()));
-            }
+            catch (DbUpdateException) { return Problem("Impossible de Effacer un Fournisseur avec des achats"); }
 
-            return NoContent();
+            return Ok(supplier);
         }
+        #endregion
+
+        #endregion
 
         private bool SupplierExists(string id)
         {

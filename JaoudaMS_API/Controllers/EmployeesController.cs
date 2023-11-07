@@ -34,7 +34,7 @@ namespace JaoudaMS_API.Controllers
             if (_context.Employees == null)
                 return Problem("la base du donnes ou le table Employee n'exite pas.");
 
-            return await _context.Employees.Select(employee => _mapper.Map<EmployeeDto>(employee)).ToListAsync();
+            return Ok(await _context.Employees.Select(employee => _mapper.Map<EmployeeDto>(employee)).ToListAsync());
         }
         #endregion
         #region api/Employees/{cin}
@@ -61,8 +61,8 @@ namespace JaoudaMS_API.Controllers
 
             var Payments = _mapper.Map<ICollection<PaymentDto>>(await _context.Payments.Where(pay => pay.Employee == cin).ToListAsync());
 
-            if (Payments.Count() == 0)
-                return Problem("Cet employé n'a jamais été payé");
+            if (Payments == null)
+                return NotFound();
 
             return Ok(Payments);
         }
@@ -80,31 +80,19 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Empolyee n'exite pas");
 
             if (EmployeeExists(employee.Cin))
-            {
-                return Conflict(new
-                {
-                    statusCode = Conflict().StatusCode,
-                    Message = $"l'employee avec CIN : ({employee.Cin}) est deja ajouter"
-                });
-            }
+                return Problem($"l'employee avec CIN : ({employee.Cin}) est deja ajouter");
 
             _context.Employees.Add(_mapper.Map<Employee>(employee));
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                throw;
-            }
+            try { await _context.SaveChangesAsync(); }
+            catch (DbUpdateException) { throw; }
 
-            return CreatedAtAction("PostEmployee", new { id = employee.Cin }, employee);
+            return Ok(employee);
         }
         #endregion
-        #region api/Employees/{cin}/Payments/Make
-        [HttpPost("{cin}/Payments/Make")]
-        public async Task<ActionResult<PaymentDto>> PostPayment(string cin)
+        #region api/Employees/{cin}/Payments/Make/{month}/{year}
+        [HttpPost("{cin}/Payments/Make/{month}/{year}")]
+        public async Task<ActionResult<PaymentDto>> PostPayment(string cin, byte month, short year)
         {
             if (_context.Payments == null)
                 return Problem("la base du donnes ou le table Payment n'exite pas");
@@ -114,30 +102,25 @@ namespace JaoudaMS_API.Controllers
             if (employee == null)
                 return NotFound();
 
-            var payment = new PaymentDto();
-
-            payment.Employee = employee.Cin;
-            payment.Salary = employee.Salary;
-            payment.Commission = employee.Commission;
-            payment.Date = DateTime.Now;
-            payment.Month = byte.Parse(DateTime.Now.Month.ToString());
+            var payment = new PaymentDto()
+            {
+                Employee = employee.Cin,
+                Date = DateTime.Now,
+                Month = month,
+                Year = year,
+                Salary = employee.Salary,
+                Commission = employee.Commission,
+            };
 
             employee.Commission = 0;
 
             _context.Entry(_mapper.Map<Payment>(payment)).State = EntityState.Added;
             _context.Entry(_mapper.Map<Employee>(employee)).State = EntityState.Modified;
 
+            try { await _context.SaveChangesAsync(); }
+            catch (DbUpdateException) { throw; }
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                throw;
-            }
-
-            return CreatedAtAction("PostPayment", new { id = payment.Employee }, payment);
+            return Ok(payment);
         }
         #endregion
 
@@ -145,51 +128,50 @@ namespace JaoudaMS_API.Controllers
 
         #region PUT Methodes
 
-        // PUT: api/Employees/5
+        #region api/Employees/{cin}
         [HttpPut("{cin}")]
         public async Task<IActionResult> PutEmployee(string cin, EmployeeDto employee)
         {
+            if (_context.Employees == null)
+                return Problem("la base du donnes ou le table Empolyee n'exite pas");
+
             if (!EmployeeExists(cin))
                 return NotFound();
 
+            if (cin != employee.Cin)
+                return Problem($"Impossible de modifier le CIN des employés");
+
             _context.Entry(_mapper.Map<Employee>(employee)).State = EntityState.Modified;
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw;
-            }
+            try { await _context.SaveChangesAsync(); }
+            catch (DbUpdateConcurrencyException) { throw; }
 
-            return Ok(new { statusCode = Ok().StatusCode, message = "les données de cet employé ont été mises à jour avec succès" });
+            return Ok(employee);
         }
+        #endregion
 
         #endregion
-        
+
         #region DELETE Methodes
 
-        // DELETE: api/Employees/5
+        #region api/Employees/{cin}
         [HttpDelete("{Cin}")]
         public async Task<IActionResult> DeleteEmployee(string Cin)
         {
             if (_context.Employees == null)
-            {
-                return NotFound();
-            }
+                return Problem("la base du donnes ou le table Empolyee n'exite pas");
+
             var employee = await _context.Employees.FindAsync(Cin);
 
             if (employee == null)
-            {
                 return NotFound();
-            }
 
             employee.Salary = 0;
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(employee);
         }
+        #endregion
 
         #endregion
 

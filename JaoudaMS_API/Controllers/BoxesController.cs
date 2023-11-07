@@ -24,17 +24,19 @@ namespace JaoudaMS_API.Controllers
             _context = context;
         }
 
-        // GET: api/Boxes
-        [HttpGet("all")]
+        #region GET Methodes
+
+        #region api/Boxes
+        [HttpGet]
         public async Task<ActionResult<IEnumerable<BoxDto>>> GetBoxes()
         {
             if (_context.Boxes == null)
                 return Problem("la base du donnes ou le table caisse n'exite pas.");
 
-            return await _context.Boxes.Select(box => _mapper.Map<BoxDto>(box)).ToListAsync();
+            return Ok(await _context.Boxes.Select(box => _mapper.Map<BoxDto>(box)).ToListAsync());
         }
-
-        // GET: api/Boxes/5
+        #endregion
+        #region api/Boxes/{type}
         [HttpGet("{type}")]
         public async Task<ActionResult<BoxDto>> GetBox(string type)
         {
@@ -46,34 +48,15 @@ namespace JaoudaMS_API.Controllers
             if (box == null)
                 return NotFound();
 
-            return box;
+            return Ok(box);
         }
+        #endregion
 
-        // PUT: api/Boxes/5
-        //[HttpPut("{type}")]
-        //public async Task<IActionResult> PutBox(string type, BoxDto box)
-        //{
-        //    if (type != box.Type)
-        //        return BadRequest();
+        #endregion
 
-        //    if (!BoxExists(type))
-        //        return NotFound();
+        #region POST Methodes
 
-        //    _context.Entry(_mapper.Map<Box>(box)).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await _context.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        throw;
-        //    }
-
-        //    return NoContent();
-        //}
-
-        // POST: api/Boxes
+        #region api/Boxes
         [HttpPost]
         public async Task<ActionResult<BoxDto>> PostBox(BoxDto box)
         {
@@ -81,23 +64,22 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table caisse n'exite pas.");
 
             if (BoxExists(box.Type))
-                return Conflict(new { statusCode = Conflict().StatusCode, massage = "cette Caisse deja existe"});
+                return Problem("cette Caisse deja existe");
 
             _context.Boxes.Add(_mapper.Map<Box>(box));
 
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                throw;
-            }
+            try { await _context.SaveChangesAsync(); }
+            catch (DbUpdateException) { throw; }
 
-            return CreatedAtAction("PostBox", new { id = box.Type }, box);
+            return Ok(box);
         }
+        #endregion
 
-        // DELETE: api/Boxes/5
+        #endregion
+
+        #region DELETE Methodes
+
+        #region api/Boxes/{Delete}
         [HttpDelete("{type}")]
         public async Task<IActionResult> DeleteBox(string type)
         {
@@ -110,19 +92,17 @@ namespace JaoudaMS_API.Controllers
                 return NotFound();
 
             if (_mapper.Map<BoxDto>(await _context.Boxes.FirstOrDefaultAsync(box => box.SubBox == type)) != null) 
-                return Conflict(
-                    new
-                    {
-                        statusCode = Conflict().StatusCode,
-                        message = $"Assurez-vous de supprimer une boîte créée par accident.\n(Il est impossible de supprimer une caisse déjà utilisée dans d'autres opérations.)"
-                    });
+                return Problem($"Assurez-vous de supprimer une boîte créée par accident.\n(Il est impossible de supprimer une caisse déjà utilisée dans d'autres opérations.)");
 
             _context.Boxes.Remove(box);
 
             await _context.SaveChangesAsync();
 
-            return NoContent();
+            return Ok(box);
         }
+        #endregion
+
+        #endregion
 
         private bool BoxExists(string id)
         {
