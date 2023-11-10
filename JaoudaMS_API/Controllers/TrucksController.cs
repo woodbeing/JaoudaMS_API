@@ -64,7 +64,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Camion n'exite pas.");
 
             if (TruckExists(truck.Matricula))
-                return Problem("Ce Camion Existe Déjà");
+                return Problem("Cette Camion Existe Déjà");
 
             _context.Trucks.Add(_mapper.Map<Truck>(truck));
             
@@ -85,12 +85,12 @@ namespace JaoudaMS_API.Controllers
         {
             if (_context.Trucks == null)
                 return Problem("la base du donnes ou le table Camion n'exite pas.");
+            
+            if (!TruckExists(matricula))
+                return NotFound();
 
             if (matricula != truck.Matricula)
                 return Problem("Impossible de mise a jour matricula d'une camion");
-
-            if (!TruckExists(matricula))
-                return NotFound();
 
             _context.Entry(_mapper.Map<Truck>(truck)).State = EntityState.Modified;
 
