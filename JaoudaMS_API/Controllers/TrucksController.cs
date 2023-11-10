@@ -38,7 +38,7 @@ namespace JaoudaMS_API.Controllers
         #endregion
         #region api/Trucks/{matricula}
         [HttpGet("{matricula}")]
-        public async Task<ActionResult<Truck>> GetTruck(string matricula)
+        public async Task<ActionResult<TruckDto>> GetTruck(string matricula)
         {
             if (_context.Trucks == null)
                 return Problem("la base du donnes ou le table Camion n'exite pas.");
@@ -112,10 +112,11 @@ namespace JaoudaMS_API.Controllers
             if (_context.Trucks == null)
                 return Problem("la base du donnes ou le table Camion n'exite pas.");
 
-            var truck = await _context.Trucks.FindAsync(matricula);
+            var truck = _mapper.Map<Truck>(await _context.Trucks.FindAsync(matricula));
 
             if (truck == null)
                 return NotFound();
+
             try
             {
                 _context.Trucks.Remove(truck);
