@@ -16,4 +16,6 @@ public partial class Box
     public virtual ICollection<PurchaseInfo> PurchaseInfos { get; set; } = new List<PurchaseInfo>();
 
     public virtual Box? SubBoxNavigation { get; set; }
+
+    public virtual ICollection<TripInfo> TripInfos { get; set; } = new List<TripInfo>();
 }

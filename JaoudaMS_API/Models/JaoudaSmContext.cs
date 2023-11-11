@@ -257,7 +257,7 @@ public partial class JaoudaSmContext : DbContext
 
         modelBuilder.Entity<TripInfo>(entity =>
         {
-            entity.HasKey(e => new { e.Trip, e.Product }).HasName("PK_TripInf");
+            entity.HasKey(e => new { e.Trip, e.Product, e.Box }).HasName("PK_TripInf");
 
             entity.ToTable("TripInfo");
 
@@ -271,6 +271,11 @@ public partial class JaoudaSmContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
+
+            entity.HasOne(d => d.BoxNavigation).WithMany(p => p.TripInfos)
+                .HasForeignKey(d => d.Box)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TIBox");
 
             entity.HasOne(d => d.ProductNavigation).WithMany(p => p.TripInfos)
                 .HasForeignKey(d => d.Product)

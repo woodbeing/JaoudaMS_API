@@ -9,7 +9,7 @@ public partial class TripInfo
 
     public string Product { get; set; } = null!;
 
-    public string? Box { get; set; }
+    public string Box { get; set; } = null!;
 
     public int? QttOut { get; set; }
 
@@ -20,6 +20,8 @@ public partial class TripInfo
     public int? QttUnitSold { get; set; }
 
     public int? QttUnitIn { get; set; }
+
+    public virtual Box BoxNavigation { get; set; } = null!;
 
     public virtual Product ProductNavigation { get; set; } = null!;
 
