@@ -3,17 +3,13 @@ using System.Collections.Generic;
 
 namespace JaoudaMS_API.Models;
 
-public partial class TripWaste
+public partial class TripCharge
 {
     public string Trip { get; set; } = null!;
 
-    public string Product { get; set; } = null!;
-
     public string Type { get; set; } = null!;
 
-    public int? Qtt { get; set; }
+    public decimal? Amount { get; set; }
 
     public virtual Trip TripNavigation { get; set; } = null!;
-
-    public virtual Waste Waste { get; set; } = null!;
 }

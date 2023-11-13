@@ -52,6 +52,10 @@ namespace JaoudaMS_API
             CreateMap<TripWasteDto, TripWaste>();
             CreateMap<TripWaste, TripWasteDto>();
 
+            //TripCharge
+            CreateMap<TripChargeDto, TripCharge>();
+            CreateMap<TripCharge, TripChargeDto>();
+
             //Truck
             CreateMap<TruckDto, Truck>();
             CreateMap<Truck, TruckDto>();

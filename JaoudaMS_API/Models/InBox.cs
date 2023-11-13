@@ -9,7 +9,9 @@ public partial class InBox
 
     public string Box { get; set; } = null!;
 
-    public int Capacity { get; set; }
+    public int? Capacity { get; set; }
+
+    public byte? Coefficient { get; set; }
 
     public int? InStock { get; set; }
 

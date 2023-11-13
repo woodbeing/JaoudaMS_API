@@ -91,14 +91,12 @@ namespace JaoudaMS_API.Controllers
             if (box == null)
                 return NotFound();
 
-            if (_mapper.Map<BoxDto>(await _context.Boxes.FirstOrDefaultAsync(box => box.SubBox == type)) != null) 
-                return Problem($"Assurez-vous de supprimer une boîte créée par accident.\n(Il est impossible de supprimer une caisse déjà utilisée dans d'autres opérations.)");
-
             _context.Boxes.Remove(box);
 
-            await _context.SaveChangesAsync();
-
-            return Ok(box);
+            try { await _context.SaveChangesAsync(); }
+            catch (DbUpdateException) {  return Problem("Assurez Vous supprimez une caisse ajouter par erreur"); }
+            
+            return Ok(_mapper.Map<BoxDto>(box));
         }
         #endregion
 

@@ -19,5 +19,11 @@
         public decimal? Charges { get; set; }
 
         public bool? IsActive { get; set; }
+
+        public virtual ICollection<TripChargeDto> TripCharges { get; set; } = new List<TripChargeDto>();
+
+        public virtual ICollection<TripInfoDto> TripInfos { get; set; } = new List<TripInfoDto>();
+
+        public virtual ICollection<TripWasteDto> TripWastes { get; set; } = new List<TripWasteDto>();
     }
 }

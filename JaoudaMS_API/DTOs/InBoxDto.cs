@@ -8,6 +8,8 @@
 
         public int Capacity { get; set; }
 
+        public byte? Coefficient { get; set; }
+
         public int? InStock { get; set; }
 
         public int? Empty { get; set; }

@@ -7,5 +7,7 @@
         public string? Supplier { get; set; }
 
         public DateTime? Date { get; set; }
+
+        public virtual ICollection<PurchaseInfoDto> PurchaseInfos { get; set; } = new List<PurchaseInfoDto>();
     }
 }

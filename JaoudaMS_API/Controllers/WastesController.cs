@@ -9,6 +9,7 @@ using JaoudaMS_API.Models;
 using AutoMapper;
 using JaoudaMS_API.DTOs;
 using Microsoft.EntityFrameworkCore.Storage;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace JaoudaMS_API.Controllers
 {
@@ -135,6 +136,8 @@ namespace JaoudaMS_API.Controllers
                 return NotFound();
 
             waste.Qtt -= qtt;
+
+            if (waste.Qtt < 0) return Problem("tu ne peux pas descendre en dessous de 0");
 
             _context.Wastes.Entry(waste).State = EntityState.Modified;
 

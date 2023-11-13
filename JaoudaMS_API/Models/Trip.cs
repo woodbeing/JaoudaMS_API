@@ -19,8 +19,6 @@ public partial class Trip
 
     public DateTime? Date { get; set; }
 
-    public decimal? Charges { get; set; }
-
     public bool? IsActive { get; set; }
 
     public virtual Employee? DriverNavigation { get; set; }
@@ -28,6 +26,8 @@ public partial class Trip
     public virtual Employee? HelperNavigation { get; set; }
 
     public virtual Employee? SellerNavigation { get; set; }
+
+    public virtual ICollection<TripCharge> TripCharges { get; set; } = new List<TripCharge>();
 
     public virtual ICollection<TripInfo> TripInfos { get; set; } = new List<TripInfo>();
 

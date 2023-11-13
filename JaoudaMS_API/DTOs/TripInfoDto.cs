@@ -2,8 +2,6 @@
 {
     public class TripInfoDto
     {
-        public string Trip { get; set; } = null!;
-
         public string Product { get; set; } = null!;
 
         public string? Box { get; set; }

@@ -33,6 +33,8 @@ public partial class JaoudaSmContext : DbContext
 
     public virtual DbSet<Trip> Trips { get; set; }
 
+    public virtual DbSet<TripCharge> TripCharges { get; set; }
+
     public virtual DbSet<TripInfo> TripInfos { get; set; }
 
     public virtual DbSet<TripWaste> TripWastes { get; set; }
@@ -52,13 +54,6 @@ public partial class JaoudaSmContext : DbContext
             entity.Property(e => e.Type)
                 .HasMaxLength(100)
                 .IsUnicode(false);
-            entity.Property(e => e.SubBox)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-
-            entity.HasOne(d => d.SubBoxNavigation).WithMany(p => p.InverseSubBoxNavigation)
-                .HasForeignKey(d => d.SubBox)
-                .HasConstraintName("FK_BBox");
         });
 
         modelBuilder.Entity<Employee>(entity =>
@@ -86,7 +81,7 @@ public partial class JaoudaSmContext : DbContext
 
         modelBuilder.Entity<InBox>(entity =>
         {
-            entity.HasKey(e => new { e.Product, e.Box, e.Capacity }).HasName("PK_BContain");
+            entity.HasKey(e => new { e.Product, e.Box }).HasName("PK_BContain");
 
             entity.ToTable("InBox");
 
@@ -220,7 +215,6 @@ public partial class JaoudaSmContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false)
                 .HasColumnName("ID");
-            entity.Property(e => e.Charges).HasColumnType("decimal(18, 0)");
             entity.Property(e => e.Date).HasColumnType("date");
             entity.Property(e => e.Driver)
                 .HasMaxLength(20)
@@ -253,6 +247,25 @@ public partial class JaoudaSmContext : DbContext
             entity.HasOne(d => d.TruckNavigation).WithMany(p => p.Trips)
                 .HasForeignKey(d => d.Truck)
                 .HasConstraintName("FK_TripTruck");
+        });
+
+        modelBuilder.Entity<TripCharge>(entity =>
+        {
+            entity.HasKey(e => new { e.Trip, e.Type }).HasName("PK_TCharge");
+
+            entity.Property(e => e.Trip)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Type)
+                .HasMaxLength(100)
+                .IsUnicode(false)
+                .HasColumnName("type");
+            entity.Property(e => e.Amount).HasColumnType("money");
+
+            entity.HasOne(d => d.TripNavigation).WithMany(p => p.TripCharges)
+                .HasForeignKey(d => d.Trip)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TCTrip");
         });
 
         modelBuilder.Entity<TripInfo>(entity =>
@@ -302,9 +315,6 @@ public partial class JaoudaSmContext : DbContext
                 .IsUnicode(false);
             entity.Property(e => e.Type)
                 .HasMaxLength(50)
-                .IsUnicode(false);
-            entity.Property(e => e.Qtt)
-                .HasMaxLength(20)
                 .IsUnicode(false);
 
             entity.HasOne(d => d.TripNavigation).WithMany(p => p.TripWastes)
