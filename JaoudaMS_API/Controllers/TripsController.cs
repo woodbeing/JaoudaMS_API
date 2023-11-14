@@ -94,6 +94,33 @@ namespace JaoudaMS_API.Controllers
 
             try
             {
+                if(trip.IsActive == false) 
+                {
+                    foreach (var prod in trip.TripInfos)
+                    {
+                        var inBox = await _context.InBoxes.FindAsync(prod.Product, prod.Box);
+                        #pragma warning disable
+                        inBox.InStock -= prod.QttOut;
+                        inBox.Empty += prod.QttOut;
+                        _context.Entry(inBox).State = EntityState.Modified;
+                        #pragma warning restore
+                    }
+                    foreach (var wast in trip.TripWastes) 
+                    {
+                        var waste = await _context.Wastes.FindAsync(wast.Product, wast.Type);
+                        if (waste == null) 
+                        {
+                            var wasteAdd = new WasteDto() { Product = wast.Product, Type = wast.Type, Qtt = wast.Qtt};
+                            await _context.Wastes.AddAsync(_mapper.Map<Waste>(wasteAdd));
+                        }
+                        else 
+                        {
+                            waste.Qtt += wast.Qtt;
+                            _context.Entry(waste).State = EntityState.Modified;
+                        }
+                    }
+                }
+                
                 _context.Entry(trip).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
