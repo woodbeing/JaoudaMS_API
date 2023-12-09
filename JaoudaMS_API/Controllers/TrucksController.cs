@@ -64,7 +64,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Camion n'exite pas.");
 
             if (TruckExists(truck.Matricula))
-                return Problem("Cette Camion Existe Déjà");
+                return Conflict(new { title = "Impossible d'Ajouter!", detail = "Cette Camion Existe Déjà" });
 
             _context.Trucks.Add(_mapper.Map<Truck>(truck));
             
@@ -90,7 +90,7 @@ namespace JaoudaMS_API.Controllers
                 return NotFound();
 
             if (matricula != truck.Matricula)
-                return Problem("Impossible de mise a jour matricula d'une camion");
+                return Conflict(new { title = "Impossible de Modifier!", detail = "tu ne peux pas changer le matricule du camion" });
 
             _context.Entry(_mapper.Map<Truck>(truck)).State = EntityState.Modified;
 
@@ -122,7 +122,9 @@ namespace JaoudaMS_API.Controllers
                 _context.Trucks.Remove(truck);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException) { return Problem("Impossible de Effacer une Camion avec des voyages"); }
+            catch (DbUpdateException) { 
+                return Conflict(new { title = "Impossible de Supprimer!", detail = "Ce Camion a des voyages" }); 
+            }
 
             return Ok(truck);
         }

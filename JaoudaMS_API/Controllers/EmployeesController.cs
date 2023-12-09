@@ -80,7 +80,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Empolyee n'exite pas");
 
             if (EmployeeExists(employee.Cin))
-                return Problem($"l'employee avec CIN : ({employee.Cin}) est deja ajouter");
+                return Conflict(new { title = "Impossible d'Ajouter!", detail = $"l'employee avec CIN : ({employee.Cin}) est deja ajouter" });
 
             _context.Employees.Add(_mapper.Map<Employee>(employee));
 
@@ -101,6 +101,9 @@ namespace JaoudaMS_API.Controllers
 
             if (employee == null)
                 return NotFound();
+            
+            if(PaymentExists(cin, month, year))
+                return Conflict(new { title = "Impossible de Creer!", detail = $"Cette Employee ({cin}) deja Payer dans {month}/{year}"});
 
             var payment = new PaymentDto()
             {
@@ -139,7 +142,7 @@ namespace JaoudaMS_API.Controllers
                 return NotFound();
 
             if (cin != employee.Cin)
-                return Problem($"Impossible de modifier le CIN des employés");
+                return Conflict(new { title = "Impossible de Modifier!", detail = $"Impossible de modifier le CIN des employés" });
 
             _context.Entry(_mapper.Map<Employee>(employee)).State = EntityState.Modified;
 
@@ -179,5 +182,10 @@ namespace JaoudaMS_API.Controllers
         {
             return (_context.Employees?.Any(e => e.Cin == id)).GetValueOrDefault();
         }
+
+        private bool PaymentExists(string cin, byte month, short year) 
+        {
+            return (_context.Payments?.Any(p => p.Employee == cin && p.Month == month && p.Year == year)).GetValueOrDefault();
+        } 
     }
 }

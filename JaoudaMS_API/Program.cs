@@ -11,7 +11,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy(MyAllowSpecificOrigins, policy =>
     {
-        policy.WithOrigins("http://localhost:1024", "http://localhost:1024/")
+        policy.WithOrigins("http://localhost:3000", "http://localhost:3000/")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
@@ -24,12 +24,8 @@ builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 

@@ -67,7 +67,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Achat n'exite pas.");
 
             if (PurchaseExists(purchase.Id))
-                return Problem("Cette Achat deja Ajouter");
+                return Conflict(new { title = "Impossible de Creer!", detail = "Cette Achat deja Ajouter" });
 
             _context.Purchases.Add(_mapper.Map<Purchase>(purchase));
 

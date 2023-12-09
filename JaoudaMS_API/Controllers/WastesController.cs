@@ -81,7 +81,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Faut n'exite pas.");
 
             if (WasteExists(waste.Product, waste.Type))
-                Problem("Ce Type de Faut deja Exist!");
+                Conflict(new { title = "Impossible d'Ajouter!", detail = "Ce Type de Faut deja Exist!" });
 
             _context.Wastes.Add(_mapper.Map<Waste>(waste));
 
@@ -113,7 +113,7 @@ namespace JaoudaMS_API.Controllers
             _context.Entry(waste).State = EntityState.Modified;
 
             try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException) { throw; }
+            catch (DbUpdateConcurrencyException) { return Conflict(new { title = "Impossible de Modifier!", detail = "assurez-vous d'avoir donné les bonnes informations" }); }
 
             return Ok(_mapper.Map<WasteDto>(waste));
         }
@@ -137,7 +137,7 @@ namespace JaoudaMS_API.Controllers
 
             waste.Qtt -= qtt;
 
-            if (waste.Qtt < 0) return Problem("tu ne peux pas descendre en dessous de 0");
+            if (waste.Qtt < 0) return Conflict(new { title = "Impossible de Supprimer!" ,detail = "tu ne peux pas descendre en dessous de 0" });
 
             _context.Wastes.Entry(waste).State = EntityState.Modified;
 

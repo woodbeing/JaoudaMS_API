@@ -64,7 +64,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Contenue Caisse n'exite pas.");
 
             if (InBoxExists(inBox.Product, inBox.Box))
-                return Problem("Cette information deja existe!");
+                return Conflict(new { title = "Impossible d'Ajouter!", detail = "Cette information deja existe!" });
 
             _context.InBoxes.Add(_mapper.Map<InBox>(inBox));
 
@@ -90,7 +90,7 @@ namespace JaoudaMS_API.Controllers
                 return NotFound();
 
             if ((inBox.Product, inBox.Box ) != (product, box ))
-                return Problem("Impossible de mise a jour");
+                return Conflict(new { title = "Impossible de mise a jour", detail = "ne peut pas traiter les informations fournies" });
 
             _context.Entry(inBox).State = EntityState.Modified;
 
@@ -122,7 +122,7 @@ namespace JaoudaMS_API.Controllers
                 _context.InBoxes.Remove(inBox);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException) { return Problem("Assurez Vous supprimez une caisse ajouter par erreur"); }
+            catch (DbUpdateException) { return Conflict(new { title = "Impossible de Supprimer" , detail = "Assurez Vous supprimez une caisse ajouter par erreur" }); }
 
             return Ok(_mapper.Map<InBoxDto>(inBox));
         }

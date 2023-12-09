@@ -64,7 +64,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Voyage n'exite pas.");
 
             if (TripExists(trip.Id)) 
-                return Problem("Cette Voyage Deja Exist");
+                return Conflict(new { title = "Impossible d'Ajouter!", detail = "Cette Voyage Deja Exist" });
 
             _context.Trips.Add(_mapper.Map<Trip>(trip));
 
@@ -87,7 +87,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Voyage n'exite pas.");
 
             if (id != trip.Id)
-                return Problem("Impossible de mise A jour cette Voyage");
+                return Conflict(new { title = "Impossible de Modifier!", detail = "Assurez-vous d'avoir donné les bonnes informations" });
 
             if (!TripExists(id))
                 return NotFound();
@@ -96,9 +96,14 @@ namespace JaoudaMS_API.Controllers
             {
                 if(trip.IsActive == false) 
                 {
+                    var driver = await _context.Employees.FindAsync(trip.Driver);
+                    var seller = await _context.Employees.FindAsync(trip.Seller);
+
                     foreach (var prod in trip.TripInfos)
                     {
                         var inBox = await _context.InBoxes.FindAsync(prod.Product, prod.Box);
+                        var product = await _context.Products.FindAsync(prod.Product);
+
                         #pragma warning disable
                         inBox.InStock -= prod.QttOut;
                         inBox.Empty += prod.QttOut;

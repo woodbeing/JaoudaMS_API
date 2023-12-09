@@ -64,7 +64,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table caisse n'exite pas.");
 
             if (BoxExists(box.Type))
-                return Problem("cette Caisse deja existe");
+                return Conflict(new { title = "Impossible d'Ajouter!" ,detail = "cette Caisse deja existe" });
 
             _context.Boxes.Add(_mapper.Map<Box>(box));
 
@@ -94,7 +94,7 @@ namespace JaoudaMS_API.Controllers
             _context.Boxes.Remove(box);
 
             try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateException) {  return Problem("Assurez Vous supprimez une caisse ajouter par erreur"); }
+            catch (DbUpdateException) {  return Conflict(new { title = "Impossible de Supprimer!", detail = "Assurez Vous supprimez une caisse ajouter par erreur" }); }
             
             return Ok(_mapper.Map<BoxDto>(box));
         }

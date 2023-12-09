@@ -64,7 +64,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("Entity set 'JaoudaSmContext.Products'  is null.");
 
             if (ProductExists(product.Id))
-                return Problem("Cette Produit deja Existe");
+                return Conflict(new { title = "Impossible d'Ajouter!", detail = "Cette Produit deja Existe" });
 
             _context.Products.Add(_mapper.Map<Product>(product));
 
@@ -87,7 +87,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Produit n'exite pas.");
 
             if (id != product.Id)
-                return Problem("Impossible de mise a jour une ID d'un produit");
+                return Conflict(new { title = "Impossible de Modifier!", detail = "Impossible Changer ID d'un produit" });
 
             if (!ProductExists(id))
                 return NotFound();
@@ -122,7 +122,7 @@ namespace JaoudaMS_API.Controllers
                 _context.Products.Remove(_mapper.Map<Product>(product));
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException) { Problem("assurez-vous de supprimer un produit ajouté par accident."); }
+            catch (DbUpdateConcurrencyException) { Conflict(new { title = "Impossible de Supprimer!", detail = "assurez-vous de supprimer un produit ajouté par accident." }); }
 
             return Ok(product);
         }

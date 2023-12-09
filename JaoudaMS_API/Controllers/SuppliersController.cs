@@ -65,7 +65,7 @@ namespace JaoudaMS_API.Controllers
                 return Problem("la base du donnes ou le table Fournisseur n'exite pas.");
 
             if (SupplierExists(supplier.Id))
-                return Problem("ce Fournisseur deja existe");
+                return Conflict(new { title = "Impossible d'Ajouter!", deteil = "Ce Fournisseur deja existe" });
 
             _context.Suppliers.Add(_mapper.Map<Supplier>(supplier));
 
@@ -91,7 +91,7 @@ namespace JaoudaMS_API.Controllers
                 return NotFound();
 
             if (id != supplier.Id)
-                return Problem("Impossible de changer l'ID d'un Fournisseur");
+                return Conflict(new {title = "Impossible de Modifier!", detail = "Impossible de changer l'ID d'un Fournisseur" });
 
             _context.Entry(_mapper.Map<Supplier>(supplier)).State = EntityState.Modified;
 
@@ -123,7 +123,7 @@ namespace JaoudaMS_API.Controllers
                 _context.Suppliers.Remove(supplier);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException) { return Problem("Impossible de Effacer un Fournisseur avec des achats"); }
+            catch (DbUpdateException) { return Conflict(new { title = "Impossible de Effacer!", detail = "Le Fournisseur a des achats" }); }
 
             return Ok(supplier);
         }
