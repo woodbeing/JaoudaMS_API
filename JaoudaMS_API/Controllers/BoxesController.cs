@@ -36,14 +36,14 @@ namespace JaoudaMS_API.Controllers
             return Ok(await _context.Boxes.Select(box => _mapper.Map<BoxDto>(box)).ToListAsync());
         }
         #endregion
-        #region api/Boxes/{type}
-        [HttpGet("{type}")]
-        public async Task<ActionResult<BoxDto>> GetBox(string type)
+        #region api/Boxes/{name}
+        [HttpGet("{name}")]
+        public async Task<ActionResult<BoxDto>> GetBox(string name)
         {
             if (_context.Boxes == null) 
                 return Problem("la base du donnes ou le table caisse n'exite pas.");
 
-            var box = _mapper.Map<BoxDto>(await _context.Boxes.FindAsync(type));
+            var box = _mapper.Map<BoxDto>(await _context.Boxes.FindAsync(name));
 
             if (box == null)
                 return NotFound();
@@ -63,7 +63,7 @@ namespace JaoudaMS_API.Controllers
             if (_context.Boxes == null)
                 return Problem("la base du donnes ou le table caisse n'exite pas.");
 
-            if (BoxExists(box.Type))
+            if (BoxExists(box.Name))
                 return Conflict(new { title = "Impossible d'Ajouter!" ,detail = "cette Caisse deja existe" });
 
             _context.Boxes.Add(_mapper.Map<Box>(box));
@@ -79,14 +79,14 @@ namespace JaoudaMS_API.Controllers
 
         #region DELETE Methodes
 
-        #region api/Boxes/{Delete}
-        [HttpDelete("{type}")]
-        public async Task<IActionResult> DeleteBox(string type)
+        #region api/Boxes/{name}
+        [HttpDelete("{name}")]
+        public async Task<IActionResult> DeleteBox(string name)
         {
             if (_context.Boxes == null)
                 return Problem("la base du donnes ou le table caisse n'exite pas.");
 
-            var box = await _context.Boxes.FindAsync(type);
+            var box = await _context.Boxes.FindAsync(name);
 
             if (box == null)
                 return NotFound();
@@ -104,7 +104,7 @@ namespace JaoudaMS_API.Controllers
 
         private bool BoxExists(string id)
         {
-            return (_context.Boxes?.Any(e => e.Type == id)).GetValueOrDefault();
+            return (_context.Boxes?.Any(e => e.Name == id)).GetValueOrDefault();
         }
     }
 }

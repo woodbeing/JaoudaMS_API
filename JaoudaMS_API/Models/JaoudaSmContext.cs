@@ -47,10 +47,13 @@ public partial class JaoudaSmContext : DbContext
     {
         modelBuilder.Entity<Box>(entity =>
         {
-            entity.HasKey(e => e.Type);
+            entity.HasKey(e => e.Name);
 
             entity.ToTable("Box");
 
+            entity.Property(e => e.Name)
+                .HasMaxLength(100)
+                .IsUnicode(false);
             entity.Property(e => e.Type)
                 .HasMaxLength(100)
                 .IsUnicode(false);

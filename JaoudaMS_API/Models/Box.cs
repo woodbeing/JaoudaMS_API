@@ -5,7 +5,9 @@ namespace JaoudaMS_API.Models;
 
 public partial class Box
 {
-    public string Type { get; set; } = null!;
+    public string Name { get; set; } = null!;
+
+    public string? Type { get; set; }
 
     public virtual ICollection<InBox> InBoxes { get; set; } = new List<InBox>();
 
