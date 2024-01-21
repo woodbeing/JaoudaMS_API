@@ -32,8 +32,12 @@ namespace JaoudaMS_API.Controllers
         {
             if (_context.Products == null)
                 return Problem("la base du donnes ou le table Produit n'exite pas.");
+            
+            return await _context.Products
+                .OrderBy(prod => prod.Genre)
+                .Select(prod => _mapper.Map<ProductDto>(prod))
+                .ToListAsync();
 
-            return await _context.Products.Select(prod => _mapper.Map<ProductDto>(prod)).ToListAsync();
         }
         #endregion
         #region api/Products/{id}

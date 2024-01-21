@@ -133,9 +133,11 @@ public partial class JaoudaSmContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false)
                 .HasColumnName("ID");
+            entity.Property(e => e.CommissionDriver).HasColumnType("money");
+            entity.Property(e => e.CommissionSeller).HasColumnType("money");
             entity.Property(e => e.Designation).IsUnicode(false);
             entity.Property(e => e.Genre).IsUnicode(false);
-            entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Price).HasColumnType("money");
         });
 
         modelBuilder.Entity<Purchase>(entity =>

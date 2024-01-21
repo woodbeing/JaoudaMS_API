@@ -10,8 +10,8 @@
 
         public decimal? Price { get; set; }
 
-        public byte? CommissionDriver { get; set; }
+        public decimal? CommissionDriver { get; set; }
 
-        public byte? CommissionSeller { get; set; }
+        public decimal? CommissionSeller { get; set; }
     }
 }
