@@ -116,19 +116,19 @@ namespace JaoudaMS_API.Controllers
             if (_context.Products == null)
                 return Problem("la base du donnes ou le table Produit n'exite pas.");
 
-            var product = _mapper.Map<ProductDto>(await _context.Products.FindAsync(id));
+            var product = await _context.Products.FindAsync(id);
 
             if (product == null)
                 return NotFound();
 
             try
             {
-                _context.Products.Remove(_mapper.Map<Product>(product));
+                _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
             }
             catch (DbUpdateConcurrencyException) { Conflict(new { title = "Impossible de Supprimer!", detail = "assurez-vous de supprimer un produit ajouté par accident." }); }
 
-            return Ok(product);
+            return Ok(_mapper.Map<ProductDto>(product));
         }
         #endregion
 

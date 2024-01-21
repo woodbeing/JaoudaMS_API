@@ -125,7 +125,7 @@ namespace JaoudaMS_API.Controllers
             }
             catch (DbUpdateException) { return Conflict(new { title = "Impossible de Effacer!", detail = "Le Fournisseur a des achats" }); }
 
-            return Ok(supplier);
+            return Ok(_mapper.Map<SupplierDto>(supplier));
         }
         #endregion
 
