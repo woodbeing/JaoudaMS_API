@@ -17,11 +17,11 @@ public partial class Product
 
     public decimal? CommissionSeller { get; set; }
 
-    public virtual ICollection<InBox> InBoxes { get; set; } = new List<InBox>();
+    public int? Stock { get; set; }
 
-    public virtual ICollection<PurchaseInfo> PurchaseInfos { get; set; } = new List<PurchaseInfo>();
+    public virtual ICollection<PurchaseProduct> PurchaseProducts { get; set; } = new List<PurchaseProduct>();
 
-    public virtual ICollection<TripInfo> TripInfos { get; set; } = new List<TripInfo>();
+    public virtual ICollection<TripProduct> TripProducts { get; set; } = new List<TripProduct>();
 
     public virtual ICollection<Waste> Wastes { get; set; } = new List<Waste>();
 }

@@ -1,9 +1,8 @@
-﻿namespace JaoudaMS_API.DTOs
-{
-    public class TruckDto
-    {
-        public string Matricula { get; set; } = null!;
+﻿namespace JaoudaMS_API.DTOs;
 
-        public string? Type { get; set; }
-    }
+public class TruckDto
+{
+    public string Matricula { get; set; } = null!;
+
+    public string? Type { get; set; }
 }

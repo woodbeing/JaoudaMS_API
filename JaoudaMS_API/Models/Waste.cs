@@ -13,5 +13,7 @@ public partial class Waste
 
     public virtual Product ProductNavigation { get; set; } = null!;
 
+    public virtual ICollection<PurchaseWaste> PurchaseWastes { get; set; } = new List<PurchaseWaste>();
+
     public virtual ICollection<TripWaste> TripWastes { get; set; } = new List<TripWaste>();
 }

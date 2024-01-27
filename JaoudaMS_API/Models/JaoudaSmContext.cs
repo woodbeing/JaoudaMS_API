@@ -19,23 +19,27 @@ public partial class JaoudaSmContext : DbContext
 
     public virtual DbSet<Employee> Employees { get; set; }
 
-    public virtual DbSet<InBox> InBoxes { get; set; }
-
     public virtual DbSet<Payment> Payments { get; set; }
 
     public virtual DbSet<Product> Products { get; set; }
 
     public virtual DbSet<Purchase> Purchases { get; set; }
 
-    public virtual DbSet<PurchaseInfo> PurchaseInfos { get; set; }
+    public virtual DbSet<PurchaseBox> PurchaseBoxes { get; set; }
+
+    public virtual DbSet<PurchaseProduct> PurchaseProducts { get; set; }
+
+    public virtual DbSet<PurchaseWaste> PurchaseWastes { get; set; }
 
     public virtual DbSet<Supplier> Suppliers { get; set; }
 
     public virtual DbSet<Trip> Trips { get; set; }
 
+    public virtual DbSet<TripBox> TripBoxes { get; set; }
+
     public virtual DbSet<TripCharge> TripCharges { get; set; }
 
-    public virtual DbSet<TripInfo> TripInfos { get; set; }
+    public virtual DbSet<TripProduct> TripProducts { get; set; }
 
     public virtual DbSet<TripWaste> TripWastes { get; set; }
 
@@ -47,11 +51,13 @@ public partial class JaoudaSmContext : DbContext
     {
         modelBuilder.Entity<Box>(entity =>
         {
-            entity.HasKey(e => e.Name);
-
             entity.ToTable("Box");
 
-            entity.Property(e => e.Name)
+            entity.Property(e => e.Id)
+                .HasMaxLength(20)
+                .IsUnicode(false)
+                .HasColumnName("ID");
+            entity.Property(e => e.Designation)
                 .HasMaxLength(100)
                 .IsUnicode(false);
             entity.Property(e => e.Type)
@@ -69,41 +75,17 @@ public partial class JaoudaSmContext : DbContext
                 .HasMaxLength(20)
                 .IsUnicode(false);
             entity.Property(e => e.Address).IsUnicode(false);
-            entity.Property(e => e.Commission).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Commission).HasColumnType("money");
             entity.Property(e => e.Name)
                 .HasMaxLength(75)
                 .IsUnicode(false);
-            entity.Property(e => e.Salary).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Salary).HasColumnType("money");
             entity.Property(e => e.Tel)
                 .HasMaxLength(30)
                 .IsUnicode(false);
             entity.Property(e => e.Type)
                 .HasMaxLength(50)
                 .IsUnicode(false);
-        });
-
-        modelBuilder.Entity<InBox>(entity =>
-        {
-            entity.HasKey(e => new { e.Product, e.Box }).HasName("PK_BContain");
-
-            entity.ToTable("InBox");
-
-            entity.Property(e => e.Product)
-                .HasMaxLength(20)
-                .IsUnicode(false);
-            entity.Property(e => e.Box)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-
-            entity.HasOne(d => d.BoxNavigation).WithMany(p => p.InBoxes)
-                .HasForeignKey(d => d.Box)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_InBoxBox");
-
-            entity.HasOne(d => d.ProductNavigation).WithMany(p => p.InBoxes)
-                .HasForeignKey(d => d.Product)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_InBoxPrd");
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -115,9 +97,9 @@ public partial class JaoudaSmContext : DbContext
             entity.Property(e => e.Employee)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.Commission).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Commission).HasColumnType("money");
             entity.Property(e => e.Date).HasColumnType("date");
-            entity.Property(e => e.Salary).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Salary).HasColumnType("money");
 
             entity.HasOne(d => d.EmployeeNavigation).WithMany(p => p.Payments)
                 .HasForeignKey(d => d.Employee)
@@ -136,8 +118,11 @@ public partial class JaoudaSmContext : DbContext
             entity.Property(e => e.CommissionDriver).HasColumnType("money");
             entity.Property(e => e.CommissionSeller).HasColumnType("money");
             entity.Property(e => e.Designation).IsUnicode(false);
-            entity.Property(e => e.Genre).IsUnicode(false);
+            entity.Property(e => e.Genre)
+                .HasMaxLength(25)
+                .IsUnicode(false);
             entity.Property(e => e.Price).HasColumnType("money");
+            entity.Property(e => e.Stock).HasColumnName("stock");
         });
 
         modelBuilder.Entity<Purchase>(entity =>
@@ -158,11 +143,35 @@ public partial class JaoudaSmContext : DbContext
                 .HasConstraintName("FK_PrchSupplier");
         });
 
-        modelBuilder.Entity<PurchaseInfo>(entity =>
+        modelBuilder.Entity<PurchaseBox>(entity =>
         {
-            entity.HasKey(e => new { e.Purchase, e.Product, e.Box });
+            entity.HasKey(e => new { e.Purchase, e.Box });
 
-            entity.ToTable("PurchaseInfo");
+            entity.ToTable("PurchaseBox");
+
+            entity.Property(e => e.Purchase)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Box)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.BoxNavigation).WithMany(p => p.PurchaseBoxes)
+                .HasForeignKey(d => d.Box)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PBBox");
+
+            entity.HasOne(d => d.PurchaseNavigation).WithMany(p => p.PurchaseBoxes)
+                .HasForeignKey(d => d.Purchase)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PBPurchase");
+        });
+
+        modelBuilder.Entity<PurchaseProduct>(entity =>
+        {
+            entity.HasKey(e => new { e.Purchase, e.Product }).HasName("PK_PurchaseInfo");
+
+            entity.ToTable("PurchaseProduct");
 
             entity.Property(e => e.Purchase)
                 .HasMaxLength(100)
@@ -170,27 +179,46 @@ public partial class JaoudaSmContext : DbContext
             entity.Property(e => e.Product)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.Box)
-                .HasMaxLength(100)
-                .IsUnicode(false);
             entity.Property(e => e.Price)
-                .HasColumnType("decimal(18, 0)")
+                .HasColumnType("money")
                 .HasColumnName("price");
 
-            entity.HasOne(d => d.BoxNavigation).WithMany(p => p.PurchaseInfos)
-                .HasForeignKey(d => d.Box)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PIBox");
-
-            entity.HasOne(d => d.ProductNavigation).WithMany(p => p.PurchaseInfos)
+            entity.HasOne(d => d.ProductNavigation).WithMany(p => p.PurchaseProducts)
                 .HasForeignKey(d => d.Product)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PIProduct");
+                .HasConstraintName("FK_PPProduct");
 
-            entity.HasOne(d => d.PurchaseNavigation).WithMany(p => p.PurchaseInfos)
+            entity.HasOne(d => d.PurchaseNavigation).WithMany(p => p.PurchaseProducts)
                 .HasForeignKey(d => d.Purchase)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PIPurchase");
+                .HasConstraintName("FK_PPPurchase");
+        });
+
+        modelBuilder.Entity<PurchaseWaste>(entity =>
+        {
+            entity.HasKey(e => new { e.Purchase, e.Product, e.Type });
+
+            entity.ToTable("PurchaseWaste");
+
+            entity.Property(e => e.Purchase)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Product)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+            entity.Property(e => e.Type)
+                .HasMaxLength(50)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.PurchaseNavigation).WithMany(p => p.PurchaseWastes)
+                .HasForeignKey(d => d.Purchase)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PWPurchase");
+
+            entity.HasOne(d => d.Waste).WithMany(p => p.PurchaseWastes)
+                .HasForeignKey(d => new { d.Product, d.Type })
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_PWProduct");
         });
 
         modelBuilder.Entity<Supplier>(entity =>
@@ -212,8 +240,6 @@ public partial class JaoudaSmContext : DbContext
 
         modelBuilder.Entity<Trip>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK_TripID");
-
             entity.ToTable("Trip");
 
             entity.Property(e => e.Id)
@@ -239,19 +265,43 @@ public partial class JaoudaSmContext : DbContext
 
             entity.HasOne(d => d.DriverNavigation).WithMany(p => p.TripDriverNavigations)
                 .HasForeignKey(d => d.Driver)
-                .HasConstraintName("FK_TripDriver");
+                .HasConstraintName("FK_TDriver");
 
             entity.HasOne(d => d.HelperNavigation).WithMany(p => p.TripHelperNavigations)
                 .HasForeignKey(d => d.Helper)
-                .HasConstraintName("FK_TripHelper");
+                .HasConstraintName("FK_THelper");
 
             entity.HasOne(d => d.SellerNavigation).WithMany(p => p.TripSellerNavigations)
                 .HasForeignKey(d => d.Seller)
-                .HasConstraintName("FK_TripSeller");
+                .HasConstraintName("FK_TSeller");
 
             entity.HasOne(d => d.TruckNavigation).WithMany(p => p.Trips)
                 .HasForeignKey(d => d.Truck)
-                .HasConstraintName("FK_TripTruck");
+                .HasConstraintName("FK_TTruck");
+        });
+
+        modelBuilder.Entity<TripBox>(entity =>
+        {
+            entity.HasKey(e => new { e.Trip, e.Box });
+
+            entity.ToTable("TripBox");
+
+            entity.Property(e => e.Trip)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Box)
+                .HasMaxLength(20)
+                .IsUnicode(false);
+
+            entity.HasOne(d => d.BoxNavigation).WithMany(p => p.TripBoxes)
+                .HasForeignKey(d => d.Box)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TBProd");
+
+            entity.HasOne(d => d.TripNavigation).WithMany(p => p.TripBoxes)
+                .HasForeignKey(d => d.Trip)
+                .OnDelete(DeleteBehavior.ClientSetNull)
+                .HasConstraintName("FK_TBTrip");
         });
 
         modelBuilder.Entity<TripCharge>(entity =>
@@ -273,11 +323,11 @@ public partial class JaoudaSmContext : DbContext
                 .HasConstraintName("FK_TCTrip");
         });
 
-        modelBuilder.Entity<TripInfo>(entity =>
+        modelBuilder.Entity<TripProduct>(entity =>
         {
-            entity.HasKey(e => new { e.Trip, e.Product, e.Box }).HasName("PK_TripInf");
+            entity.HasKey(e => new { e.Trip, e.Product });
 
-            entity.ToTable("TripInfo");
+            entity.ToTable("TripProduct");
 
             entity.Property(e => e.Trip)
                 .HasMaxLength(100)
@@ -285,25 +335,17 @@ public partial class JaoudaSmContext : DbContext
             entity.Property(e => e.Product)
                 .HasMaxLength(20)
                 .IsUnicode(false);
-            entity.Property(e => e.Box)
-                .HasMaxLength(100)
-                .IsUnicode(false);
-            entity.Property(e => e.Price).HasColumnType("decimal(18, 0)");
+            entity.Property(e => e.Price).HasColumnType("money");
 
-            entity.HasOne(d => d.BoxNavigation).WithMany(p => p.TripInfos)
-                .HasForeignKey(d => d.Box)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TIBox");
-
-            entity.HasOne(d => d.ProductNavigation).WithMany(p => p.TripInfos)
+            entity.HasOne(d => d.ProductNavigation).WithMany(p => p.TripProducts)
                 .HasForeignKey(d => d.Product)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TIProd");
+                .HasConstraintName("FK_TPProd");
 
-            entity.HasOne(d => d.TripNavigation).WithMany(p => p.TripInfos)
+            entity.HasOne(d => d.TripNavigation).WithMany(p => p.TripProducts)
                 .HasForeignKey(d => d.Trip)
                 .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_TITrip");
+                .HasConstraintName("FK_TPTrip");
         });
 
         modelBuilder.Entity<TripWaste>(entity =>

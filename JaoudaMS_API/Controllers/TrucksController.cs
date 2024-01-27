@@ -24,113 +24,97 @@ namespace JaoudaMS_API.Controllers
             _mapper = mapper;
         }
 
-        #region GET Methodes
-
-        #region api/Trucks
+        // GET: api/Trucks
         [HttpGet]
         public async Task<ActionResult<IEnumerable<TruckDto>>> GetTrucks()
         {
-          if (_context.Trucks == null)
-                return Problem("la base du donnes ou le table Camion n'exite pas.");
+            if (_context.Trucks == null)
+                return NotFound();
 
-            return Ok(await _context.Trucks.Select(truck => _mapper.Map<TruckDto>(truck)).ToListAsync());
+            return Ok(await _context.Trucks
+                .OrderBy(truck => truck.Type)
+                .Select(truck => _mapper.Map<TruckDto>(truck))
+                .ToListAsync());
         }
-        #endregion
-        #region api/Trucks/{matricula}
+
+        // GET: api/Trucks/5
         [HttpGet("{matricula}")]
         public async Task<ActionResult<TruckDto>> GetTruck(string matricula)
         {
             if (_context.Trucks == null)
-                return Problem("la base du donnes ou le table Camion n'exite pas.");
+                return NotFound();
 
-            var truck = _mapper.Map<TruckDto>(await _context.Trucks.FindAsync(matricula));
+            var truck = await _context.Trucks.FindAsync(matricula);
 
             if (truck == null)
                 return NotFound();
 
-            return Ok(truck);
+            return Ok(_mapper.Map<TruckDto>(truck));
         }
-        #endregion
 
-        #endregion
-
-        #region POST Methodes
-
-        #region api/Trucks
+        // POST: api/Trucks
         [HttpPost]
         public async Task<ActionResult<TruckDto>> PostTruck(TruckDto truck)
         {
             if (_context.Trucks == null)
-                return Problem("la base du donnes ou le table Camion n'exite pas.");
+                return NotFound();
 
             if (TruckExists(truck.Matricula))
-                return Conflict(new { title = "Impossible d'Ajouter!", detail = "Cette Camion Existe Déjà" });
+                return Conflict();
 
-            _context.Trucks.Add(_mapper.Map<Truck>(truck));
-            
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateException) { throw; }
+            try
+            {
+                _context.Trucks.Add(_mapper.Map<Truck>(truck));
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException){ throw; }
 
             return Ok(truck);
         }
-        #endregion
 
-        #endregion
-
-        #region PUT Methodes
-
-        #region api/Trucks/{matricula}
+        // PUT: api/Trucks/5
         [HttpPut("{matricula}")]
-        public async Task<IActionResult> PutTruck(string matricula, TruckDto truck)
+        public async Task<ActionResult<TruckDto>> PutTruck(string matricula, TruckDto truck)
         {
             if (_context.Trucks == null)
-                return Problem("la base du donnes ou le table Camion n'exite pas.");
+                return NotFound();
+
+            if (matricula != truck.Matricula)
+                return BadRequest();
             
             if (!TruckExists(matricula))
                 return NotFound();
 
-            if (matricula != truck.Matricula)
-                return Conflict(new { title = "Impossible de Modifier!", detail = "tu ne peux pas changer le matricule du camion" });
-
-            _context.Entry(_mapper.Map<Truck>(truck)).State = EntityState.Modified;
-
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException) { throw; }
+            try
+            {
+                _context.Entry(truck).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException){ throw; }
 
             return Ok(truck);
         }
-        #endregion
 
-        #endregion
-
-        #region DELETE Methodes
-
-        #region api/Trucks/{matricula}
+        // DELETE: api/Trucks/5
         [HttpDelete("{matricula}")]
-        public async Task<IActionResult> DeleteTruck(string matricula)
+        public async Task<ActionResult<TruckDto>> DeleteTruck(string matricula)
         {
             if (_context.Trucks == null)
-                return Problem("la base du donnes ou le table Camion n'exite pas.");
-
-            var truck = _mapper.Map<Truck>(await _context.Trucks.FindAsync(matricula));
-
-            if (truck == null)
                 return NotFound();
 
+            var truck = await _context.Trucks.FindAsync(matricula);
+            
+            if (truck == null)
+                return NotFound();
             try
             {
                 _context.Trucks.Remove(truck);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateException) { 
-                return Conflict(new { title = "Impossible de Supprimer!", detail = "Ce Camion a des voyages" }); 
-            }
+            catch (DbUpdateException) { Conflict(new { detail = "assurez-vous de supprimer un produit ajouté par accident." }); }
 
-            return Ok(truck);
+            return Ok(_mapper.Map<TruckDto>(truck));
         }
-        #endregion
-
-        #endregion
 
         private bool TruckExists(string matricula)
         {

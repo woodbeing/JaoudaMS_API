@@ -15,10 +15,6 @@ namespace JaoudaMS_API
             //Employee
             CreateMap<EmployeeDto, Employee>();
             CreateMap<Employee, EmployeeDto>();
-            
-            //InBox
-            CreateMap<InBoxDto, InBox>();
-            CreateMap<InBox, InBoxDto>();
 
             //Payment 
             CreateMap<PaymentDto, Payment>();
@@ -32,9 +28,17 @@ namespace JaoudaMS_API
             CreateMap<PurchaseDto, Purchase>();
             CreateMap<Purchase, PurchaseDto>();
 
-            //PurchaseInfo
-            CreateMap<PurchaseInfoDto, PurchaseInfo>();
-            CreateMap<PurchaseInfo, PurchaseInfoDto>();
+            //PurchaseProduct
+            CreateMap<PurchaseProductDto, PurchaseProduct>();
+            CreateMap<PurchaseProduct, PurchaseProductDto>();
+
+            //PurchaseBox
+            CreateMap<PurchaseBoxDto, PurchaseBox>();
+            CreateMap<PurchaseBox, PurchaseBoxDto>();
+
+            //PurchaseWaste
+            CreateMap<PurchaseWasteDto, PurchaseWaste>();
+            CreateMap<PurchaseWaste, PurchaseWasteDto>();
 
             //Supplier
             CreateMap<SupplierDto, Supplier>();
@@ -44,17 +48,21 @@ namespace JaoudaMS_API
             CreateMap<TripDto, Trip>();
             CreateMap<Trip, TripDto>();
 
-            //TripInfo
-            CreateMap<TripInfoDto, TripInfo>();
-            CreateMap<TripInfo, TripInfoDto>();
-
-            //TripWaste
-            CreateMap<TripWasteDto, TripWaste>();
-            CreateMap<TripWaste, TripWasteDto>();
+            //TripBox
+            CreateMap<TripBoxDto, TripBox>();
+            CreateMap<TripBox, TripBoxDto>();
 
             //TripCharge
             CreateMap<TripChargeDto, TripCharge>();
             CreateMap<TripCharge, TripChargeDto>();
+
+            //TripProduct
+            CreateMap<TripProductDto, TripProduct>();
+            CreateMap<TripProduct, TripProductDto>();
+
+            //TripWaste
+            CreateMap<TripWasteDto, TripWaste>();
+            CreateMap<TripWaste, TripWasteDto>();
 
             //Truck
             CreateMap<TruckDto, Truck>();

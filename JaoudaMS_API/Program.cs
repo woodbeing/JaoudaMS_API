@@ -7,8 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddDbContext<JaoudaSmContext>(options => 
-    options.UseSqlServer(builder.Configuration.GetConnectionString("JaoudaSM"))
-           .UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking));
+    options.UseSqlServer(builder.Configuration.GetConnectionString("JaoudaSM")));
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(MyAllowSpecificOrigins, policy =>

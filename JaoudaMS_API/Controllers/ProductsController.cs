@@ -6,8 +6,8 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using JaoudaMS_API.Models;
-using JaoudaMS_API.DTOs;
 using AutoMapper;
+using JaoudaMS_API.DTOs;
 
 namespace JaoudaMS_API.Controllers
 {
@@ -24,97 +24,83 @@ namespace JaoudaMS_API.Controllers
             _mapper = mapper;
         }
 
-        #region GET Methodes
-
-        #region api/Products
+        // GET: api/Products
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ProductDto>>> GetProducts()
         {
             if (_context.Products == null)
-                return Problem("la base du donnes ou le table Produit n'exite pas.");
-            
-            return await _context.Products
-                .OrderBy(prod => prod.Genre)
-                .Select(prod => _mapper.Map<ProductDto>(prod))
-                .ToListAsync();
+                return NotFound();
 
+            return Ok(await _context.Products
+                .OrderBy(product => product.Genre)
+                .Select(product => _mapper.Map<ProductDto>(product))
+                .ToListAsync());
         }
-        #endregion
-        #region api/Products/{id}
+
+        // GET: api/Products/5
         [HttpGet("{id}")]
         public async Task<ActionResult<ProductDto>> GetProduct(string id)
         {
             if (_context.Products == null)
-                return Problem("La base du donnees ou La Table Produit n'existe pas.");
+                return NotFound();
 
-            var product = _mapper.Map<ProductDto>(await _context.Products.FindAsync(id));
+            var product = await _context.Products.FindAsync(id);
 
             if (product == null)
                 return NotFound();
 
-            return Ok(product);
+            return Ok(_mapper.Map<ProductDto>(product));
         }
-        #endregion
 
-        #endregion
-
-        #region POST Methodes
-
-        #region api/Products
+        // POST: api/Products
         [HttpPost]
         public async Task<ActionResult<ProductDto>> PostProduct(ProductDto product)
         {
             if (_context.Products == null)
-                return Problem("Entity set 'JaoudaSmContext.Products'  is null.");
+                return NotFound();
 
             if (ProductExists(product.Id))
-                return Conflict(new { title = "Impossible d'Ajouter!", detail = "Cette Produit deja Existe" });
+                return Conflict(new { detail = "Cette Produit deja Existe" } );
 
-            _context.Products.Add(_mapper.Map<Product>(product));
-
-            try { await _context.SaveChangesAsync(); }
+            try
+            {
+                _context.Products.Add(_mapper.Map<Product>(product));
+                await _context.SaveChangesAsync();
+            }
             catch (DbUpdateException) { throw; }
 
             return Ok(product);
         }
-        #endregion
 
-        #endregion
-
-        #region PUT Methodes
-
-        #region api/Products/{id}
+        // PUT: api/Products/5
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutProduct(string id, ProductDto product)
+        public async Task<ActionResult<ProductDto>> PutProduct(string id, ProductDto product)
         {
             if (_context.Products == null)
-                return Problem("la base du donnes ou le table Produit n'exite pas.");
+                return NotFound();
 
             if (id != product.Id)
-                return Conflict(new { title = "Impossible de Modifier!", detail = "Impossible Changer ID d'un produit" });
+                return NotFound();
 
             if (!ProductExists(id))
                 return NotFound();
 
-            _context.Entry(_mapper.Map<Product>(product)).State = EntityState.Modified;
-
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException) { throw; }
+            try
+            {
+                _context.Entry(_mapper.Map<Product>(product)).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException) { throw; }
 
             return Ok(product);
         }
-        #endregion
 
-        #endregion
-
-        #region DELETE Methodes
-
-        #region api/Products/{id}
+        // DELETE: api/Products/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteProduct(string id)
+        public async Task<ActionResult<ProductDto>> DeleteProduct(string id)
         {
             if (_context.Products == null)
-                return Problem("la base du donnes ou le table Produit n'exite pas.");
+                return NotFound();
 
             var product = await _context.Products.FindAsync(id);
 
@@ -126,13 +112,10 @@ namespace JaoudaMS_API.Controllers
                 _context.Products.Remove(product);
                 await _context.SaveChangesAsync();
             }
-            catch (DbUpdateConcurrencyException) { Conflict(new { title = "Impossible de Supprimer!", detail = "assurez-vous de supprimer un produit ajouté par accident." }); }
+            catch(DbUpdateException) { Conflict(new { detail = "Assurez-vous de supprimer un produit ajouté par accident." }); }
 
             return Ok(_mapper.Map<ProductDto>(product));
         }
-        #endregion
-
-        #endregion
 
         private bool ProductExists(string id)
         {

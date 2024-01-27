@@ -11,7 +11,11 @@ public partial class Purchase
 
     public DateTime? Date { get; set; }
 
-    public virtual ICollection<PurchaseInfo> PurchaseInfos { get; set; } = new List<PurchaseInfo>();
+    public virtual ICollection<PurchaseBox> PurchaseBoxes { get; set; } = new List<PurchaseBox>();
+
+    public virtual ICollection<PurchaseProduct> PurchaseProducts { get; set; } = new List<PurchaseProduct>();
+
+    public virtual ICollection<PurchaseWaste> PurchaseWastes { get; set; } = new List<PurchaseWaste>();
 
     public virtual Supplier? SupplierNavigation { get; set; }
 }

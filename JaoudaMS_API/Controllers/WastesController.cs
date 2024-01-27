@@ -8,8 +8,6 @@ using Microsoft.EntityFrameworkCore;
 using JaoudaMS_API.Models;
 using AutoMapper;
 using JaoudaMS_API.DTOs;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace JaoudaMS_API.Controllers
 {
@@ -26,133 +24,104 @@ namespace JaoudaMS_API.Controllers
             _mapper = mapper;
         }
 
-        #region GET Methodes
-
-        #region api/Wastes
+        // GET: api/Wastes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<WasteDto>>> GetWastes()
         {
             if (_context.Wastes == null)
-                return Problem("la base du donnes ou le table Faut n'exite pas.");
-
-            return await _context.Wastes.Select(waste => _mapper.Map<WasteDto>(waste)).ToListAsync();
-        }
-        #endregion
-        #region api/Wastes/{product}
-        [HttpGet("{product}")]
-        public async Task<ActionResult<IEnumerable<WasteDto>>> GetWaste(string product)
-        {
-            if (_context.Wastes == null)
-                return Problem("la base du donnes ou le table Faut n'exite pas.");
-
-            var waste = _mapper.Map<IEnumerable<WasteDto>>(await _context.Wastes.Where(wst => wst.Product == product).ToListAsync());
-
-            if (waste.Count() == 0)
                 return NotFound();
 
-            return Ok(waste);
+            return Ok(await _context.Wastes
+                .OrderBy(waste => waste.Product)
+                .Select(waste => _mapper.Map<WasteDto>(waste))
+                .ToListAsync());
         }
-        #endregion
-        #region api/Wastes/{product}/{type}
+
+        // GET: api/Wastes/5
         [HttpGet("{product}/{type}")]
-        public async Task<ActionResult<WasteDto>> GetWaste(string product, string type )
+        public async Task<ActionResult<WasteDto>> GetWaste(string product, string type)
         {
             if (_context.Wastes == null)
-                return Problem("la base du donnes ou le table Faut n'exite pas.");
+                return NotFound();
 
-            var waste = _mapper.Map<WasteDto>(await _context.Wastes.FindAsync(product, type));
+            var waste = await _context.Wastes.FindAsync(product, type);
 
             if (waste == null)
                 return NotFound();
 
-            return Ok(waste);
+            return Ok(_mapper.Map<WasteDto>(waste));
         }
-        #endregion
 
-        #endregion
-
-        #region POST Methodes
-
-        #region api/Wastes
+        // POST: api/Wastes
         [HttpPost]
         public async Task<ActionResult<WasteDto>> PostWaste(WasteDto waste)
         {
             if (_context.Wastes == null)
-                return Problem("la base du donnes ou le table Faut n'exite pas.");
+                return NotFound();
 
             if (WasteExists(waste.Product, waste.Type))
-                Conflict(new { title = "Impossible d'Ajouter!", detail = "Ce Type de Faut deja Exist!" });
+                return Conflict(new { detail = "Ce Type de Faut deja Exist!" });
 
-            _context.Wastes.Add(_mapper.Map<Waste>(waste));
-
-            try { await _context.SaveChangesAsync(); }
+            try
+            {
+                _context.Wastes.Add(_mapper.Map<Waste>(waste));
+                await _context.SaveChangesAsync();
+            }
             catch (DbUpdateException) { throw; }
 
             return Ok(waste);
         }
-        #endregion
 
-        #endregion
+        // PUT: api/Wastes/5
+        [HttpPut("{product}/{type}")]
+        public async Task<ActionResult<WasteDto>> PutWaste(string product, string type, WasteDto waste)
+        {
+            if (product != waste.Product)
+                return NotFound();
 
-        #region PUT Methodes
+            if (!WasteExists(product, type))
+                return NotFound();
 
-        #region api/Wastes/{product}/{type}/{qtt}
-        [HttpPut("{product}/{type}/{qtt}")]
-        public async Task<IActionResult> PutWaste(string product, string type, int qtt)
+            try
+            {
+                _context.Entry(_mapper.Map<Waste>(waste)).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException){ throw; }
+
+            return Ok(waste);
+        }
+
+        // DELETE: api/Wastes/5
+        [HttpDelete("{product}/{type}/{quantity}")]
+        public async Task<ActionResult<WasteDto>> DeleteWaste(string product, string type, int quantity)
         {
             if (_context.Wastes == null)
-                return Problem("la base du donnes ou le table Faut n'exite pas.");
+                return NotFound();
 
             var waste = await _context.Wastes.FindAsync(product, type);
 
             if (waste == null)
                 return NotFound();
-            
-            waste.Qtt += qtt;
 
-            _context.Entry(waste).State = EntityState.Modified;
+            waste.Qtt -= quantity;
 
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateConcurrencyException) { return Conflict(new { title = "Impossible de Modifier!", detail = "assurez-vous d'avoir donné les bonnes informations" }); }
+            if (waste.Qtt < 0)
+                return Conflict(new { detail = "Tu ne peux pas descendre en dessous de 0" });
 
-            return Ok(_mapper.Map<WasteDto>(waste));
-        }
-        #endregion
-
-        #endregion
-
-        #region DELETE Methodes
-
-        #region api/Wastes/{product}/{type}/{qtt}
-        [HttpDelete("{product}/{type}/{qtt}")]
-        public async Task<IActionResult> DeleteWaste(string product, string type, int qtt)
-        {
-            if (_context.Wastes == null)
-                return Problem("la base du donnes ou le table Faut n'exite pas.");
-
-            var waste = await _context.Wastes.FindAsync(product, type);
-            
-            if (waste == null)
-                return NotFound();
-
-            waste.Qtt -= qtt;
-
-            if (waste.Qtt < 0) return Conflict(new { title = "Impossible de Supprimer!" ,detail = "tu ne peux pas descendre en dessous de 0" });
-
-            _context.Wastes.Entry(waste).State = EntityState.Modified;
-
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateException) { throw; }
+            try
+            {
+                _context.Entry(waste).State = EntityState.Modified;
+                await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateException) { return Conflict(); }
 
             return Ok(_mapper.Map<WasteDto>(waste));
         }
-        #endregion
-
-        #endregion
 
         private bool WasteExists(string product, string type)
         {
-            return (_context.Wastes?.Any(e => e.Product == product && e.Type == type)).GetValueOrDefault();
+            return (_context.Wastes?.Any(waste => waste.Product == product && waste.Type == type)).GetValueOrDefault();
         }
     }
 }

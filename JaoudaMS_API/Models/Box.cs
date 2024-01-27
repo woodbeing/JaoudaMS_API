@@ -5,13 +5,19 @@ namespace JaoudaMS_API.Models;
 
 public partial class Box
 {
-    public string Name { get; set; } = null!;
+    public string Id { get; set; } = null!;
+
+    public string? Designation { get; set; }
 
     public string? Type { get; set; }
 
-    public virtual ICollection<InBox> InBoxes { get; set; } = new List<InBox>();
+    public short? InStock { get; set; }
 
-    public virtual ICollection<PurchaseInfo> PurchaseInfos { get; set; } = new List<PurchaseInfo>();
+    public short? Empty { get; set; }
 
-    public virtual ICollection<TripInfo> TripInfos { get; set; } = new List<TripInfo>();
+    public short? Sent { get; set; }
+
+    public virtual ICollection<PurchaseBox> PurchaseBoxes { get; set; } = new List<PurchaseBox>();
+
+    public virtual ICollection<TripBox> TripBoxes { get; set; } = new List<TripBox>();
 }

@@ -20,91 +20,101 @@ namespace JaoudaMS_API.Controllers
 
         public BoxesController(JaoudaSmContext context, IMapper mapper)
         {
-            _mapper = mapper;
             _context = context;
+            _mapper = mapper;
         }
 
-        #region GET Methodes
-
-        #region api/Boxes
+        // GET: api/Boxes
         [HttpGet]
         public async Task<ActionResult<IEnumerable<BoxDto>>> GetBoxes()
         {
             if (_context.Boxes == null)
-                return Problem("la base du donnes ou le table caisse n'exite pas.");
+                return NotFound();
 
             return Ok(await _context.Boxes.Select(box => _mapper.Map<BoxDto>(box)).ToListAsync());
         }
-        #endregion
-        #region api/Boxes/{name}
-        [HttpGet("{name}")]
-        public async Task<ActionResult<BoxDto>> GetBox(string name)
-        {
-            if (_context.Boxes == null) 
-                return Problem("la base du donnes ou le table caisse n'exite pas.");
 
-            var box = _mapper.Map<BoxDto>(await _context.Boxes.FindAsync(name));
+        // GET: api/Boxes/5
+        [HttpGet("{id}")]
+        public async Task<ActionResult<BoxDto>> GetBox(string id)
+        {
+            if (_context.Boxes == null)
+                return NotFound();
+
+            var box = _mapper.Map<BoxDto>(await _context.Boxes.FindAsync(id));
 
             if (box == null)
                 return NotFound();
 
             return Ok(box);
         }
-        #endregion
 
-        #endregion
-
-        #region POST Methodes
-
-        #region api/Boxes
+        // POST: api/Boxes
         [HttpPost]
         public async Task<ActionResult<BoxDto>> PostBox(BoxDto box)
         {
             if (_context.Boxes == null)
-                return Problem("la base du donnes ou le table caisse n'exite pas.");
+                return NotFound();
 
-            if (BoxExists(box.Name))
-                return Conflict(new { title = "Impossible d'Ajouter!" ,detail = "cette Caisse deja existe" });
-
+            if (BoxExists(box.Id))
+                return Conflict(new { detail = "cette Caisse deja existe" });
+            
             _context.Boxes.Add(_mapper.Map<Box>(box));
 
             try { await _context.SaveChangesAsync(); }
+            catch (DbUpdateException){ throw; }
+
+            return Ok(_mapper.Map<BoxDto>(box));
+        }
+
+        // PUT: api/Boxes/5
+        [HttpPut("{id}")]
+        public async Task<ActionResult<BoxDto>> PutBox(string id, BoxDto box)
+        {
+            if (_context.Boxes == null)
+                return NotFound();
+
+            if (!BoxExists(id))
+                return NotFound();
+
+            if (id != box.Id)
+                return BadRequest();
+
+            try
+            {
+                _context.Entry(box).State = EntityState.Modified;
+                await _context.SaveChangesAsync(); 
+            }
             catch (DbUpdateException) { throw; }
 
             return Ok(box);
         }
-        #endregion
 
-        #endregion
-
-        #region DELETE Methodes
-
-        #region api/Boxes/{name}
-        [HttpDelete("{name}")]
-        public async Task<IActionResult> DeleteBox(string name)
+        // DELETE: api/Boxes/5
+        [HttpDelete("{id}")]
+        public async Task<ActionResult<BoxDto>> DeleteBox(string id)
         {
             if (_context.Boxes == null)
-                return Problem("la base du donnes ou le table caisse n'exite pas.");
+                return NotFound();
 
-            var box = await _context.Boxes.FindAsync(name);
+            var box = await _context.Boxes.FindAsync(id);
 
             if (box == null)
                 return NotFound();
-
-            _context.Boxes.Remove(box);
-
-            try { await _context.SaveChangesAsync(); }
-            catch (DbUpdateException) {  return Conflict(new { title = "Impossible de Supprimer!", detail = "Assurez Vous supprimez une caisse ajouter par erreur" }); }
+            try
+            {
+                _context.Boxes.Remove(box);
+                await _context.SaveChangesAsync();
+            }
+            catch(DbUpdateException) { Conflict("Assurez Vous supprimez une caisse ajouter par erreur"); }
             
+
             return Ok(_mapper.Map<BoxDto>(box));
         }
-        #endregion
-
-        #endregion
 
         private bool BoxExists(string id)
         {
-            return (_context.Boxes?.Any(e => e.Name == id)).GetValueOrDefault();
+            return (_context.Boxes?.Any(e => e.Id == id)).GetValueOrDefault();
         }
     }
 }

@@ -27,9 +27,11 @@ public partial class Trip
 
     public virtual Employee? SellerNavigation { get; set; }
 
+    public virtual ICollection<TripBox> TripBoxes { get; set; } = new List<TripBox>();
+
     public virtual ICollection<TripCharge> TripCharges { get; set; } = new List<TripCharge>();
 
-    public virtual ICollection<TripInfo> TripInfos { get; set; } = new List<TripInfo>();
+    public virtual ICollection<TripProduct> TripProducts { get; set; } = new List<TripProduct>();
 
     public virtual ICollection<TripWaste> TripWastes { get; set; } = new List<TripWaste>();
 

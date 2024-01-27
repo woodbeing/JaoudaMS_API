@@ -1,8 +1,8 @@
 ﻿namespace JaoudaMS_API.DTOs;
 
-public class TripWasteDto
+public class PurchaseWasteDto
 {
-    public string Trip { get; set; } = null!;
+    public string Purchase { get; set; } = null!;
 
     public string Product { get; set; } = null!;
 
