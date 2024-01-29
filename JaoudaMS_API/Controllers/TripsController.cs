@@ -31,10 +31,10 @@ namespace JaoudaMS_API.Controllers
             if (_context.Trips == null)
                 return NotFound();
 
-            return await _context.Trips
+            return Ok(await _context.Trips
                 .OrderByDescending(trip => trip.Date)
                 .Select(trip => _mapper.Map<TripDto>(trip))
-                .ToListAsync();
+                .ToListAsync());
         }
 
         // GET: api/Trips/5
