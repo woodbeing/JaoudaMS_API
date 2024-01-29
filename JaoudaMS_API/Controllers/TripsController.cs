@@ -70,13 +70,20 @@ namespace JaoudaMS_API.Controllers
                 .Include(trip => trip.TripBoxes)
                 .FirstAsync(trip => trip.Truck == truck);
 
+            if (trip == null)
+                return NotFound();
+
             foreach(TripProduct tripP in  trip.TripProducts)
             {
                 tripP.QttOut = (short?)(tripP.QttOut - tripP.QttSold);
+                tripP.QttSold = 0;
             }
 
-            if (trip == null)
-                return NotFound();
+            foreach(TripBox tripB in trip.TripBoxes)
+            {
+                tripB.QttOut = (short?)(tripB.QttOut - tripB.QttIn);
+                tripB.QttIn = 0;
+            }
 
             return Ok(_mapper.Map<TripDto>(trip));
         }
