@@ -106,7 +106,7 @@ namespace JaoudaMS_API.Controllers
 
                 foreach(TripBoxDto tripB in trip.TripBoxes) 
                 {
-                    var box = await _context.Boxes.FindAsync(tripB);
+                    var box = await _context.Boxes.FindAsync(tripB.Box);
 
                     if (box == null) return NotFound();
 
@@ -140,17 +140,17 @@ namespace JaoudaMS_API.Controllers
 
             try
             {
-                _context.Entry(_mapper.Map<Trip>(trip)).State = EntityState.Modified;
- 
+
+                var driver = await _context.Employees.FindAsync(trip.Driver);
+                var seller = await _context.Employees.FindAsync(trip.Seller);
+
+
                 foreach (TripBoxDto tripB in trip.TripBoxes)
                 {
-                    var tripBox = await _context.TripBoxes.FindAsync(tripB.Trip, tripB.Box);
                     var box = await _context.Boxes.FindAsync(tripB.Box);
 
-                    if (tripBox == null) return NotFound();
-
                     #pragma warning disable
-                    box.Empty += tripBox.QttIn;
+                    box.Empty += tripB.QttIn;
                     #pragma warning restore
 
                     _context.Entry(box).State = EntityState.Modified;
@@ -159,14 +159,16 @@ namespace JaoudaMS_API.Controllers
 
                 foreach (TripProductDto tripP in trip.TripProducts)
                 {
-                    var tripProduct = await _context.TripProducts.FindAsync(tripP.Trip, tripP.Product);
+                    var product = await _context.Products.FindAsync(tripP.Product);
 
-                    if (tripProduct == null) NotFound();
-                    
+                    #pragma warning disable
+                    driver.Commission += (decimal?)(tripP.QttSold * product.CommissionDriver);
+                    seller.Commission += (decimal?)(tripP.QttSold * product.CommissionSeller);
+                    #pragma warning restore
+
                     _context.Entry(_mapper.Map<TripProduct>(tripP)).State = EntityState.Modified;
-                    _context.TripProducts.Add(_mapper.Map<TripProduct>(tripProduct));
                 }
-                
+
                 foreach (TripWasteDto tripW in trip.TripWastes) 
                 {
                     var waste = await _context.Wastes.FindAsync(tripW.Product, tripW.Type);
@@ -182,13 +184,19 @@ namespace JaoudaMS_API.Controllers
                         waste.Qtt += tripW.Qtt;
                         _context.Entry(waste).State = EntityState.Modified;
                     }
+
+                    _context.TripWastes.Add(_mapper.Map<TripWaste>(tripW));
                 }
 
                 foreach (TripChargeDto tripC  in trip.TripCharges) 
                     _context.TripCharges.Add(_mapper.Map<TripCharge>(tripC));
 
+                #pragma warning disable
+                _context.Entry(driver).State = EntityState.Modified;
+                _context.Entry(seller).State = EntityState.Modified;
+                _context.Entry(_mapper.Map<Trip>(trip)).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
-
+                #pragma warning restore
             }
             catch (DbUpdateException) { throw; }
 
