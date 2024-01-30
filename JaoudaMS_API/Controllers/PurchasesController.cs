@@ -44,94 +44,70 @@ namespace JaoudaMS_API.Controllers
             if (_context.Purchases == null)
                 return NotFound();
 
-            var purchase = await _context.Purchases.FindAsync(id);
+            var purchase = await _context.Purchases
+                .Include(purchase => purchase.PurchaseProducts)
+                .Include(purchase => purchase.PurchaseBoxes)
+                .Include(purchase => purchase.PurchaseWastes)
+                .FirstAsync(purchase => purchase.Id == id);
 
             if (purchase == null)
-            {
                 return NotFound();
-            }
 
-            return purchase;
-        }
-
-        // PUT: api/Purchases/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutPurchase(string id, Purchase purchase)
-        {
-            if (id != purchase.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(purchase).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PurchaseExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return Ok(_mapper.Map<PurchaseDto>(purchase));
         }
 
         // POST: api/Purchases
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Purchase>> PostPurchase(Purchase purchase)
-        {
-          if (_context.Purchases == null)
-          {
-              return Problem("Entity set 'JaoudaSmContext.Purchases'  is null.");
-          }
-            _context.Purchases.Add(purchase);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (PurchaseExists(purchase.Id))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetPurchase", new { id = purchase.Id }, purchase);
-        }
-
-        // DELETE: api/Purchases/5
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePurchase(string id)
+        public async Task<ActionResult<PurchaseDto>> PostPurchase(PurchaseDto purchase)
         {
             if (_context.Purchases == null)
-            {
                 return NotFound();
-            }
-            var purchase = await _context.Purchases.FindAsync(id);
-            if (purchase == null)
+
+            if (PurchaseExists(purchase.Id))
+                return Conflict(new { detail = "Cette Achat Deja Exist" });
+
+            try
             {
-                return NotFound();
+                foreach(PurchaseBoxDto purchaseB in purchase.PurchaseBoxes) 
+                {
+                    var box = await _context.Boxes.FindAsync(purchaseB.Box);
+
+                    #pragma warning disable
+                    box.InStock += (short?)(purchaseB.QttIn);
+                    box.Empty -= (short?)(purchaseB.QttSent);
+                    #pragma warning restore
+
+                    _context.Entry(box).State = EntityState.Modified;
+                }
+
+                foreach(PurchaseProductDto purchaseP in purchase.PurchaseProducts)
+                {
+                    var product = await _context.Products.FindAsync(purchaseP.Product);
+
+                    #pragma warning disable
+                    product.Stock += (int?)purchaseP.Qtt;
+                    #pragma warning restore
+
+                    _context.Entry(product).State = EntityState.Modified;
+                }
+
+                foreach (PurchaseWasteDto purchaseW in purchase.PurchaseWastes)
+                {
+                    var waste = await _context.Wastes.FindAsync(purchaseW.Product, purchaseW.Type);
+
+                    #pragma warning disable
+                    waste.Qtt -= (short?)(purchaseW.Qtt);
+                    #pragma warning restore
+
+                    _context.Entry(waste).State = EntityState.Modified;
+                }
+
+                _context.Purchases.Add(_mapper.Map<Purchase>(purchase));   
+                await _context.SaveChangesAsync();
             }
+            catch (DbUpdateException){ throw; }
 
-            _context.Purchases.Remove(purchase);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(purchase);
         }
 
         private bool PurchaseExists(string id)

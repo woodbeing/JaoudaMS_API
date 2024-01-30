@@ -11,6 +11,4 @@ public class BoxDto
     public short? InStock { get; set; }
 
     public short? Empty { get; set; }
-
-    public short? Sent { get; set; }
 }

@@ -15,8 +15,6 @@ public partial class Box
 
     public short? Empty { get; set; }
 
-    public short? Sent { get; set; }
-
     public virtual ICollection<PurchaseBox> PurchaseBoxes { get; set; } = new List<PurchaseBox>();
 
     public virtual ICollection<TripBox> TripBoxes { get; set; } = new List<TripBox>();
