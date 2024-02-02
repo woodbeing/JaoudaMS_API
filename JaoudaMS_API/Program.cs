@@ -8,11 +8,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<JaoudaSmContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("JaoudaSM")));
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy(MyAllowSpecificOrigins, policy =>
     {
-        policy.WithOrigins("http://localhost:3000", "http://localhost:3000/")
+        policy.WithOrigins("*")
               .AllowAnyHeader()
               .AllowAnyMethod();
     });
