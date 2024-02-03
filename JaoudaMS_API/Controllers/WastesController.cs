@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using JaoudaMS_API.Models;
 using AutoMapper;
 using JaoudaMS_API.DTOs;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace JaoudaMS_API.Controllers
 {
@@ -64,6 +65,12 @@ namespace JaoudaMS_API.Controllers
 
             try
             {
+                var product = await _context.Products.FindAsync(waste.Product);
+                
+                #pragma warning disable
+                product.Stock -= waste.Qtt;
+                #pragma warning restore
+                
                 _context.Wastes.Add(_mapper.Map<Waste>(waste));
                 await _context.SaveChangesAsync();
             }
@@ -79,11 +86,22 @@ namespace JaoudaMS_API.Controllers
             if (product != waste.Product)
                 return NotFound();
 
-            if (!WasteExists(product, type))
+            var dbwaste = await _context.Wastes.FindAsync(waste.Product, waste.Type);
+
+            if (dbwaste == null)
                 return NotFound();
 
             try
             {
+                #pragma warning disable
+                int qtt = (int)(waste.Qtt - dbwaste.Qtt);
+                if(qtt > 0)
+                {
+                    var dbproduct = await _context.Products.FindAsync(waste.Product);
+                    dbproduct.Stock -= waste.Qtt;
+                    _context.Entry(dbproduct).State = EntityState.Modified;
+                }
+
                 _context.Entry(_mapper.Map<Waste>(waste)).State = EntityState.Modified;
                 await _context.SaveChangesAsync();
             }
