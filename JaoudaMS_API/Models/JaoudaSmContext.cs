@@ -15,6 +15,8 @@ public partial class JaoudaSmContext : DbContext
     {
     }
 
+    public virtual DbSet<Authentification> Authentifications { get; set; }
+
     public virtual DbSet<Box> Boxes { get; set; }
 
     public virtual DbSet<Employee> Employees { get; set; }
@@ -49,6 +51,18 @@ public partial class JaoudaSmContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Authentification>(entity =>
+        {
+            entity.HasKey(e => e.Login).HasName("PK_Auth");
+
+            entity.ToTable("Authentification");
+
+            entity.Property(e => e.Login)
+                .HasMaxLength(100)
+                .IsUnicode(false);
+            entity.Property(e => e.Password).IsUnicode(false);
+        });
+
         modelBuilder.Entity<Box>(entity =>
         {
             entity.ToTable("Box");
@@ -122,6 +136,7 @@ public partial class JaoudaSmContext : DbContext
                 .HasMaxLength(25)
                 .IsUnicode(false);
             entity.Property(e => e.Price).HasColumnType("money");
+            entity.Property(e => e.PriceProfessional).HasColumnType("money");
             entity.Property(e => e.Stock).HasColumnName("stock");
         });
 

@@ -98,6 +98,8 @@ namespace JaoudaMS_API.Controllers
             if (TripExists(trip.Id))
                 return Conflict(new { detail = "Cette Voyage Deja Exist" });
 
+            var employeeTyp = await _context.Employees.FindAsync(trip.Driver);
+
             try
             {
                 foreach(TripProductDto tripP in trip.TripProducts) 
@@ -107,6 +109,13 @@ namespace JaoudaMS_API.Controllers
                     if (product == null) return NotFound();
                     
                     product.Stock -= tripP.QttOut;
+
+                    tripP.Price = product.Price;
+
+                    #pragma warning disable
+                    if (employeeTyp.Type == "Professional")
+                        tripP.Price = product.PriceProfessional;
+                    #pragma warning restore
 
                     _context.Entry(product).State = EntityState.Modified;
                 }
@@ -147,7 +156,6 @@ namespace JaoudaMS_API.Controllers
 
             try
             {
-
                 var driver = await _context.Employees.FindAsync(trip.Driver);
                 var seller = await _context.Employees.FindAsync(trip.Seller);
 
@@ -169,8 +177,11 @@ namespace JaoudaMS_API.Controllers
                     var product = await _context.Products.FindAsync(tripP.Product);
 
                     #pragma warning disable
-                    driver.Commission += (decimal?)(tripP.QttSold * product.CommissionDriver);
-                    seller.Commission += (decimal?)(tripP.QttSold * product.CommissionSeller);
+                    if (driver.Type != "Professional")
+                    {
+                        driver.Commission += (decimal?)(tripP.QttSold * product.CommissionDriver);
+                        seller.Commission += (decimal?)(tripP.QttSold * product.CommissionSeller);
+                    }
                     #pragma warning restore
 
                     _context.Entry(_mapper.Map<TripProduct>(tripP)).State = EntityState.Modified;

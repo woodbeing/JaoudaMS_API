@@ -10,6 +10,8 @@ public class ProductDto
 
     public decimal? Price { get; set; }
 
+    public decimal? PriceProfessional { get; set; }
+
     public decimal? CommissionDriver { get; set; }
 
     public decimal? CommissionSeller { get; set; }
