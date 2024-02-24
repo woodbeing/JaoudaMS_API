@@ -84,6 +84,27 @@ namespace JaoudaMS_API.Controllers
             return Ok(authentification);
         }
 
+        // POST: api/Authentifications/5
+        [HttpPost("{id}")]
+        public async Task<ActionResult<Authentification>> PostAuthentification(string id, Authentification authentification)
+        {
+            if (_context.Authentifications == null)
+                return NotFound();
+
+            if (!AuthentificationExists(authentification.Login))
+                return NotFound();
+
+            if(id != authentification.Login)
+                return NotFound();
+
+            var account = await _context.Authentifications.FindAsync(id);
+
+            if (account?.Password != authentification.Password)
+                return Ok(false);
+
+            return Ok(true);
+        }
+
         // DELETE: api/Authentifications/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteAuthentification(string id)
