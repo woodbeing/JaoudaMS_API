@@ -6,6 +6,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddSingleton<Suspend>();
+
 builder.Services.AddDbContext<JaoudaSmContext>(options => 
     options.UseSqlServer(builder.Configuration.GetConnectionString("JaoudaSM")));
 
