@@ -82,7 +82,7 @@ namespace JaoudaMS_API.Controllers
 
             try
             {
-                _context.Entry(box).State = EntityState.Modified;
+                _context.Entry(_mapper.Map<Box>(box)).State = EntityState.Modified;
                 await _context.SaveChangesAsync(); 
             }
             catch (DbUpdateException) { throw; }
